@@ -85,4 +85,4 @@ classDiagram
 
     Usuario "1" --> "*" Contrato
     Usuario "1" --> "*" ModeloIA
-    Usuario "1" --> "*" Recados
+    Usuario "1" --> "*" Recado
