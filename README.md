@@ -68,6 +68,7 @@ classDiagram
         - String socios
         - String jsonIA
         - Date dataUpload
+        - bool analisado
         - String caminhoArquivo
     }
 
