@@ -53,39 +53,9 @@ classDiagram
     class Contrato {
         - Long id
         - String nomeArquivo
+        - String tipoSociedade
         - Date dataUpload
         - String caminhoArquivo
-        + salvarPDF()
-        + extrairDados()
-    }
-
-    class Dashboard {
-        - Long id
-        - String resumo
-        - Map estatisticas
-        + gerarRelatorio()
-    }
-
-    class API {
-        + autenticarUsuario()
-        + receberContrato()
-        + enviarDadosExtraidos()
-    }
-
-    class GeminiService {
-        + extrairDadosContrato(arquivo: PDF)
-    }
-
-    class FlutterApp {
-        + telaLogin()
-        + telaCadastro()
-        + enviarPDF()
-        + exibirDashboard()
     }
 
     Usuario "1" --> "*" Contrato
-    Contrato "1" --> "*" Dashboard
-    API --> Usuario : autenticação
-    API --> Contrato : upload/consulta
-    API --> GeminiService : usa
-    FlutterApp --> API : consome
