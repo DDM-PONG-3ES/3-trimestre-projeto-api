@@ -43,7 +43,10 @@ Plano de ataque do 3° trimestre
 ### 4 classes
 
 - Cada um vai fazer um crud
-- 
+- Usuario: Mateus
+- Contrato: Eduardo
+- ModeloIA e gemini: Pedro
+- Recado: artur
 
 ## Diagrama de Classes
 
