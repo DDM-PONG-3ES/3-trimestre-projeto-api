@@ -38,6 +38,13 @@ Plano de ataque do 3° trimestre
 
 ---
 
+## Definições e planejamento
+
+### 4 classes
+
+- Cada um vai fazer um crud
+- 
+
 ## Diagrama de Classes
 
 ```mermaid
@@ -47,15 +54,31 @@ classDiagram
         - String nome
         - String email
         - String senha
-        + autenticar()
     }
 
     class Contrato {
         - Long id
         - String nomeArquivo
         - String tipoSociedade
+        - String clausulas
+        - String areaAtuacoes
+        - String socios
+        - String jsonIA
         - Date dataUpload
         - String caminhoArquivo
     }
 
+    class Recado {
+        - Long id
+        - String nome
+        - String erroIA
+    }
+
+    class ModeloIA {
+        - Long id
+        - String nome
+        - String chave
+    }
+
     Usuario "1" --> "*" Contrato
+    Usuario "1" --> "*" ModeloIA
