@@ -6,7 +6,8 @@ Plano de ataque do 3° trimestre
 **Equipe:**  
 - Artur Flacon  
 - Eduardo Ceciliato  
-- Mateus Stainer  
+- Mateus Stainer
+- Pedro H. Lino
 
 ---
 
