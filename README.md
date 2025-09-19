@@ -146,11 +146,14 @@ classDiagram
     Usuario "1" --> "*" Contrato
     Usuario "1" --> "*" ModeloIA
     Usuario "1" --> "*" Recado
-    Contrato "1" --> "1" NomeEmpresa
-    Contrato "1" --> "1" Sede
-    Contrato "1" --> "1" CapitalSocial
-    Contrato "1" --> "1" PrazoDuracao
-    Contrato "1" --> "1" Administracao
-    Contrato "1" --> "1" Fora
-    Contrato "1" --> "1" Socios
+    Contrato "1" --> "*" Clausula
+    Clausula "*" --> "*" NomeEmpresa
+    Clausula "*" --> "*" Sede
+    Clausula "*" --> "*" CapitalSocial
+    Clausula "*" --> "*" PrazoDuracao
+    Clausula "*" --> "*" Administracao
+    Clausula "*" --> "*" Foro
+    Clausula "*" --> "*" Socios
+    Clausula "*" --> "*" ObjetoSocial
+    Clausula "*" --> "*" ClausulaGenerica
 
