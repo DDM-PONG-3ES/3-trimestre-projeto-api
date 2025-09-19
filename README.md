@@ -47,6 +47,7 @@ Plano de ataque do 3° trimestre
 - Contrato: Eduardo
 - ModeloIA e gemini: Pedro
 - Recado: artur
+- NomeEmpresa:pedro
 
 ## Diagrama de Classes
 
