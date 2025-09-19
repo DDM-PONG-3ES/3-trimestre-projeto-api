@@ -114,6 +114,15 @@ class HomeTela extends StatelessWidget {
                       children: [
                         _buildFeatureCard(
                           context,
+                          icon: Icons.message,
+                          title: 'Recados',
+                          subtitle: 'Gerenciar recados',
+                          onTap: () {
+                            Navigator.of(context).pushNamed('/recados');
+                          },
+                        ),
+                        _buildFeatureCard(
+                          context,
                           icon: Icons.person,
                           title: 'Perfil',
                           subtitle: 'Gerenciar conta',
@@ -147,21 +156,6 @@ class HomeTela extends StatelessWidget {
                           icon: Icons.analytics,
                           title: 'Relatórios',
                           subtitle: 'Visualizar dados',
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Funcionalidade em desenvolvimento',
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                        _buildFeatureCard(
-                          context,
-                          icon: Icons.help,
-                          title: 'Ajuda',
-                          subtitle: 'Suporte e FAQ',
                           onTap: () {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
@@ -274,6 +268,14 @@ class _CustomDrawer extends StatelessWidget {
                       title: const Text('Home'),
                       onTap: () {
                         Navigator.pop(context);
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.message),
+                      title: const Text('Recados'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed('/recados');
                       },
                     ),
                     ListTile(
