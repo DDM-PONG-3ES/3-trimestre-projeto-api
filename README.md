@@ -150,3 +150,5 @@ classDiagram
     Contrato "1" --> "1" PrazoDuracao
     Contrato "1" --> "1" Administracao
     Contrato "1" --> "1" Fora
+    Contrato "1" --> "1" Socios
+
