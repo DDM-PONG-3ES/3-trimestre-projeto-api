@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:desafio/servicos/autenticacao_servico.dart';
+import 'package:desafio/servicos/recado_servico.dart';
 import 'package:desafio/app/telas/login_tela.dart';
 import 'package:desafio/app/telas/cadastro_tela.dart';
 import 'package:desafio/app/telas/home_tela.dart';
+import 'package:desafio/app/telas/recados_tela.dart';
 import 'dart:io';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -15,7 +17,7 @@ void main() {
     // Change the default factory
     databaseFactory = databaseFactoryFfi;
   }
-  
+
   runApp(const MyApp());
 }
 
@@ -24,8 +26,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => AutenticacaoServico(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => AutenticacaoServico()),
+        ChangeNotifierProvider(create: (context) => RecadoServico()),
+      ],
       child: MaterialApp(
         title: 'Desafio App',
         theme: ThemeData(
@@ -37,6 +42,7 @@ class MyApp extends StatelessWidget {
           '/login': (context) => const LoginTela(),
           '/cadastro': (context) => const CadastroTela(),
           '/home': (context) => const HomeTela(),
+          '/recados': (context) => const RecadosTela(),
         },
       ),
     );
