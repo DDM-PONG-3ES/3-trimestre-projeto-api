@@ -61,14 +61,9 @@ classDiagram
 
     class Contrato {
         - Long id
-        - String nomeArquivo
-        - String tipoSociedade
-        - String clausulas
-        - String areaAtuacoes
-        - String socios
-        - String jsonIA
-        - Date dataUpload
-        - String caminhoArquivo
+        - String titulo
+        - String descricao
+        - Date uploadEm
     }
 
     class Recado {
@@ -83,6 +78,74 @@ classDiagram
         - String chave
     }
 
+    class Clausula {
+        lond id
+        string tipo
+    }
+
+    class ClausulaGenerica {
+         - Long id
+         - String nomeClausula
+         - String conteudo
+    }
+
+    class Socios{
+        long id
+        string nome
+        string statusSocial
+        string dataNascimento
+        string cpf
+        string residensia
+    }
+
+    class ObjetoSocial {
+        - Long id
+        - String atividadesEconomicas
+        - String atividadesExercidas
+    }
+
+     class NomeEmpresa {
+        - Long id
+        - String razaoSocial
+        - String nomeFantasia
+    }
+
+    class Sede {
+        - Long id
+        - String enderecoCompleto
+    }
+
+    class CapitalSocial {
+        - Long id
+        - double valorTotal
+        - String divisaoQuotas
+        - String formaIntegralizacao
+    }
+
+    class PrazoDuracao {
+        - Long id
+        - String tipoPrazo
+    }
+
+    class Administracao {
+        - Long id
+        - String nomeAdministrador
+        - String poderesAdministrativos
+    }
+    
+    class Foro {
+        - Long id
+        - String cidade
+        - String estado
+    }
+    
+
     Usuario "1" --> "*" Contrato
     Usuario "1" --> "*" ModeloIA
     Usuario "1" --> "*" Recado
+    Contrato "1" --> "1" NomeEmpresa
+    Contrato "1" --> "1" Sede
+    Contrato "1" --> "1" CapitalSocial
+    Contrato "1" --> "1" PrazoDuracao
+    Contrato "1" --> "1" Administracao
+    Contrato "1" --> "1" Fora
