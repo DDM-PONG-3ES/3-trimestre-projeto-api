@@ -15,11 +15,11 @@ class Conexao {
 
   Future<Database> _initDatabase() async {
     String path = join(await getDatabasesPath(), 'nahero_app.db');
-    // deleteDatabase(path);
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
       onConfigure: _onConfigure,
     );
   }
@@ -44,19 +44,29 @@ class Conexao {
     await db.execute('''
       CREATE TABLE contratos(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nomeArquivo TEXT,
-        tipoSociedade TEXT,
-        clausulas TEXT,
-        areaAtuacoes TEXT,
-        socios TEXT,
-        jsonIA TEXT,
-        dataUpload TEXT,
-        caminhoArquivo TEXT,
+        nome TEXT NOT NULL,
+        descricao TEXT,
+        status TEXT DEFAULT 'Rascunho',
+        caminho TEXT,
         usuario_id INTEGER NOT NULL,
         criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         excluidoEm TIMESTAMP,
         FOREIGN KEY (usuario_id) REFERENCES usuarios (id) ON DELETE CASCADE
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE clausulas(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        texto TEXT NOT NULL,
+        tipo TEXT NOT NULL,
+        status TEXT DEFAULT 'Ativa',
+        contrato_id INTEGER NOT NULL,
+        criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        excluidoEm TIMESTAMP,
+        FOREIGN KEY (contrato_id) REFERENCES contratos (id) ON DELETE CASCADE
       )
     ''');
 
@@ -83,10 +93,130 @@ class Conexao {
         excluidoEm TIMESTAMP
       )
     ''');
+
+    await db.execute(
+      'CREATE INDEX idx_contratos_usuario_id ON contratos(usuario_id)',
+    );
+    await db.execute('CREATE INDEX idx_contratos_status ON contratos(status)');
+    await db.execute(
+      'CREATE INDEX idx_clausulas_contrato_id ON clausulas(contrato_id)',
+    );
+    await db.execute('CREATE INDEX idx_clausulas_tipo ON clausulas(tipo)');
+    await db.execute('CREATE INDEX idx_clausulas_status ON clausulas(status)');
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      var result = await db.rawQuery(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='contratos'",
+      );
+
+      if (result.isNotEmpty) {
+        await db.execute('''
+          CREATE TABLE contratos_backup AS 
+          SELECT * FROM contratos
+        ''');
+        await db.execute('DROP TABLE contratos');
+
+        await db.execute('''
+          CREATE TABLE contratos(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nome TEXT NOT NULL,
+            descricao TEXT,
+            status TEXT DEFAULT 'Rascunho',
+            caminho TEXT,
+            usuario_id INTEGER NOT NULL,
+            criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            excluidoEm TIMESTAMP,
+            FOREIGN KEY (usuario_id) REFERENCES usuarios (id) ON DELETE CASCADE
+          )
+        ''');
+
+        try {
+          await db.execute('''
+            INSERT INTO contratos (id, nome, descricao, status, caminho, usuario_id, criadoEm, atualizadoEm, excluidoEm)
+            SELECT 
+              id, 
+              COALESCE(nomeArquivo, 'Contrato sem nome') as nome,
+              COALESCE(clausulas, '') as descricao,
+              COALESCE('Ativo', 'Rascunho') as status,
+              COALESCE(caminhoArquivo, '') as caminho,
+              usuario_id,
+              criadoEm,
+              atualizadoEm,
+              excluidoEm
+            FROM contratos_backup
+            WHERE excluidoEm IS NULL
+          ''');
+        } catch (e) {
+          print('Erro na migração dos dados de contratos: $e');
+        }
+
+        await db.execute('DROP TABLE contratos_backup');
+      }
+
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS clausulas(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          texto TEXT NOT NULL,
+          tipo TEXT NOT NULL,
+          status TEXT DEFAULT 'Ativa',
+          contrato_id INTEGER NOT NULL,
+          criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          excluidoEm TIMESTAMP,
+          FOREIGN KEY (contrato_id) REFERENCES contratos (id) ON DELETE CASCADE
+        )
+      ''');
+
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_contratos_usuario_id ON contratos(usuario_id)',
+      );
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_contratos_status ON contratos(status)',
+      );
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_clausulas_contrato_id ON clausulas(contrato_id)',
+      );
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_clausulas_tipo ON clausulas(tipo)',
+      );
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_clausulas_status ON clausulas(status)',
+      );
+    }
   }
 
   Future<void> close() async {
     final db = await database;
-    db.close();
+    await db.close();
+  }
+
+  Future<void> resetDatabase() async {
+    String path = join(await getDatabasesPath(), 'nahero_app.db');
+    await deleteDatabase(path);
+    _database = null;
+    await database;
+  }
+
+  Future<bool> verificarIntegridade() async {
+    try {
+      final db = await database;
+      final result = await db.rawQuery('PRAGMA integrity_check');
+      return result.isNotEmpty && result.first['integrity_check'] == 'ok';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> obterInformacoesTabelaContrato() async {
+    final db = await database;
+    return await db.rawQuery("PRAGMA table_info(contratos)");
+  }
+
+  Future<List<Map<String, dynamic>>> obterInformacoesTabelaClausula() async {
+    final db = await database;
+    return await db.rawQuery("PRAGMA table_info(clausulas)");
   }
 }
