@@ -44,7 +44,8 @@ Plano de ataque do 3° trimestre
 
 - Cada um vai fazer um crud
 - Usuario: Mateus - autenticação e registro de si mesmo
-- Contrato: Eduardo - 
+- Contrato: Eduardo
+- Clausula: Eduardo 
 - ModeloIA e gemini: Pedro
 - Recado: artur
 - NomeEmpresa:pedro
