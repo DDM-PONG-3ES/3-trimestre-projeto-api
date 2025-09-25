@@ -288,6 +288,14 @@ class _CustomDrawer extends StatelessWidget {
                       },
                     ),
                     ListTile(
+                      leading: const Icon(Icons.description),
+                      title: const Text('Nome Empresa'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed('/nomeEmpresa');
+                      },
+                    ),
+                    ListTile(
                       leading: const Icon(Icons.message),
                       title: const Text('Recados'),
                       onTap: () {
