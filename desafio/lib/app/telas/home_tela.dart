@@ -114,6 +114,15 @@ class HomeTela extends StatelessWidget {
                       children: [
                         _buildFeatureCard(
                           context,
+                          icon: Icons.description,
+                          title: 'Contratos',
+                          subtitle: 'Gerenciar contratos',
+                          onTap: () {
+                            Navigator.of(context).pushNamed('/contratos');
+                          },
+                        ),
+                        _buildFeatureCard(
+                          context,
                           icon: Icons.message,
                           title: 'Recados',
                           subtitle: 'Gerenciar recados',
@@ -268,6 +277,14 @@ class _CustomDrawer extends StatelessWidget {
                       title: const Text('Home'),
                       onTap: () {
                         Navigator.pop(context);
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.description),
+                      title: const Text('Contratos'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed('/contratos');
                       },
                     ),
                     ListTile(

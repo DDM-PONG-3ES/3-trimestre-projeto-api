@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:desafio/servicos/autenticacao_servico.dart';
 import 'package:desafio/servicos/recado_servico.dart';
+import 'package:desafio/servicos/contrato_servico.dart';
+import 'package:desafio/servicos/clausula_servico.dart';
 import 'package:desafio/app/telas/login_tela.dart';
 import 'package:desafio/app/telas/cadastro_tela.dart';
 import 'package:desafio/app/telas/home_tela.dart';
 import 'package:desafio/app/telas/recados_tela.dart';
+import 'package:desafio/app/telas/contrato_tela.dart';
 import 'dart:io';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -30,6 +33,8 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => AutenticacaoServico()),
         ChangeNotifierProvider(create: (context) => RecadoServico()),
+        ChangeNotifierProvider(create: (context) => ContratoServico()),
+        ChangeNotifierProvider(create: (context) => ClausulaServico()),
       ],
       child: MaterialApp(
         title: 'Desafio App',
@@ -43,6 +48,7 @@ class MyApp extends StatelessWidget {
           '/cadastro': (context) => const CadastroTela(),
           '/home': (context) => const HomeTela(),
           '/recados': (context) => const RecadosTela(),
+          '/contratos': (context) => const ContratosTela(),
         },
       ),
     );
