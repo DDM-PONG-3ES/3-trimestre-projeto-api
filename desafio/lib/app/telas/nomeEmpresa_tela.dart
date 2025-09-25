@@ -1,9 +1,10 @@
-import 'package:desafio/modelo/dao/nomeEmpresa_dao.dart';
 import 'package:desafio/modelo/entidades/nomeEmpresa/nomeEmpresa.dart';
+import 'package:desafio/servicos/nomeEmpresa_servico.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
 // Importe suas classes aqui
 // import 'nome_empresa.dart';
-// import 'nomeEmpresa_dao.dart';
+// import 'nome_empresa_service.dart';
 
 class NomeEmpresaScreen extends StatefulWidget {
   const NomeEmpresaScreen({Key? key}) : super(key: key);
@@ -16,15 +17,17 @@ class _NomeEmpresaScreenState extends State<NomeEmpresaScreen> {
   final _formKey = GlobalKey<FormState>();
   final _razaoSocialController = TextEditingController();
   final _nomeFantasiaController = TextEditingController();
-  final _dao = NomeEmpresaDao();
+  final _service = NomeEmpresaService();
 
   List<NomeEmpresa> _empresas = [];
   bool _isLoading = false;
   bool _isSaving = false;
+  StreamSubscription<List<NomeEmpresa>>? _empresasSubscription;
 
   @override
   void initState() {
     super.initState();
+    _setupEmpresasListener();
     _loadEmpresas();
   }
 
@@ -32,32 +35,63 @@ class _NomeEmpresaScreenState extends State<NomeEmpresaScreen> {
   void dispose() {
     _razaoSocialController.dispose();
     _nomeFantasiaController.dispose();
+    _empresasSubscription?.cancel();
     super.dispose();
   }
 
-  // Carregar todas as empresas salvas
+  // Configurar listener para mudanças automáticas na lista
+  void _setupEmpresasListener() {
+    _empresasSubscription = _service.empresasStream.listen(
+      (empresas) {
+        if (mounted) {
+          setState(() {
+            _empresas = empresas;
+            _isLoading = false;
+          });
+        }
+      },
+      onError: (error) {
+        if (mounted) {
+          _showErrorSnackBar('Erro ao atualizar lista: $error');
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      },
+    );
+  }
+
+  // Carregar todas as empresas
   Future<void> _loadEmpresas() async {
+    if (_isLoading) return;
+
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final empresas = await _dao.findAll();
-      setState(() {
-        _empresas = empresas;
-      });
+      final empresas = await _service.listarTodasEmpresas();
+      if (mounted) {
+        setState(() {
+          _empresas = empresas;
+        });
+      }
+    } on EmpresaException catch (e) {
+      _showErrorSnackBar(e.message);
     } catch (e) {
-      _showErrorSnackBar('Erro ao carregar empresas: $e');
+      _showErrorSnackBar('Erro inesperado: $e');
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
-  // Salvar nova empresa
+  // Salvar nova empresa usando a service
   Future<void> _saveEmpresa() async {
-    if (!_formKey.currentState!.validate()) {
+    if (!_formKey.currentState!.validate() || _isSaving) {
       return;
     }
 
@@ -67,45 +101,122 @@ class _NomeEmpresaScreenState extends State<NomeEmpresaScreen> {
 
     try {
       final empresa = NomeEmpresa(
-        id: 0, // Será gerado automaticamente pelo banco
+        id: 0, // Será gerado automaticamente
         razaoSocial: _razaoSocialController.text.trim(),
         nomeFantasia: _nomeFantasiaController.text.trim(),
       );
 
-      await _dao.insert(empresa);
+      await _service.salvarEmpresa(empresa);
 
-      // Limpar os campos
+      // Limpar os campos após sucesso
       _razaoSocialController.clear();
       _nomeFantasiaController.clear();
-
-      // Recarregar a lista
-      await _loadEmpresas();
 
       _showSuccessSnackBar('Empresa salva com sucesso!');
 
       // Remover foco dos campos
       FocusScope.of(context).unfocus();
+    } on EmpresaException catch (e) {
+      _showErrorSnackBar(e.message);
     } catch (e) {
-      _showErrorSnackBar('Erro ao salvar empresa: $e');
+      _showErrorSnackBar('Erro inesperado: $e');
     } finally {
-      setState(() {
-        _isSaving = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
     }
   }
 
-  // Deletar empresa
+  // Deletar empresa usando a service
   Future<void> _deleteEmpresa(NomeEmpresa empresa) async {
     final confirmed = await _showDeleteConfirmation(empresa);
     if (!confirmed) return;
 
     try {
-      await _dao.delete(empresa);
-      await _loadEmpresas();
+      await _service.deletarEmpresa(empresa.id);
       _showSuccessSnackBar('Empresa deletada com sucesso!');
+    } on EmpresaException catch (e) {
+      _showErrorSnackBar(e.message);
     } catch (e) {
-      _showErrorSnackBar('Erro ao deletar empresa: $e');
+      _showErrorSnackBar('Erro inesperado: $e');
     }
+  }
+
+  // Buscar empresas por nome fantasia
+  Future<void> _searchByNomeFantasia(String query) async {
+    if (query.trim().isEmpty) {
+      await _loadEmpresas();
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final empresas = await _service.buscarPorNomeFantasia(query.trim());
+      if (mounted) {
+        setState(() {
+          _empresas = empresas;
+        });
+      }
+    } on EmpresaException catch (e) {
+      _showErrorSnackBar(e.message);
+    } catch (e) {
+      _showErrorSnackBar('Erro na busca: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  // Mostrar informações detalhadas da empresa
+  void _showEmpresaDetails(NomeEmpresa empresa) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Text(empresa.nomeFantasia),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildDetailRow('ID:', empresa.id.toString()),
+                const SizedBox(height: 8),
+                _buildDetailRow('Razão Social:', empresa.razaoSocial),
+                const SizedBox(height: 8),
+                _buildDetailRow('Nome Fantasia:', empresa.nomeFantasia),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Fechar'),
+              ),
+            ],
+          ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 100,
+          child: Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        Expanded(child: Text(value)),
+      ],
+    );
   }
 
   // Mostrar diálogo de confirmação para deletar
@@ -115,8 +226,22 @@ class _NomeEmpresaScreenState extends State<NomeEmpresaScreen> {
           builder:
               (context) => AlertDialog(
                 title: const Text('Confirmar Exclusão'),
-                content: Text(
-                  'Deseja realmente deletar a empresa "${empresa.nomeFantasia}"?',
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Deseja realmente deletar a empresa:'),
+                    const SizedBox(height: 8),
+                    Text(
+                      '"${empresa.nomeFantasia}"',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      empresa.razaoSocial,
+                      style: TextStyle(color: Colors.grey.shade600),
+                    ),
+                  ],
                 ),
                 actions: [
                   TextButton(
@@ -136,9 +261,16 @@ class _NomeEmpresaScreenState extends State<NomeEmpresaScreen> {
 
   // Mostrar SnackBar de sucesso
   void _showSuccessSnackBar(String message) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white),
+            const SizedBox(width: 8),
+            Expanded(child: Text(message)),
+          ],
+        ),
         backgroundColor: Colors.green,
         duration: const Duration(seconds: 2),
       ),
@@ -147,11 +279,25 @@ class _NomeEmpresaScreenState extends State<NomeEmpresaScreen> {
 
   // Mostrar SnackBar de erro
   void _showErrorSnackBar(String message) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
+        content: Row(
+          children: [
+            const Icon(Icons.error, color: Colors.white),
+            const SizedBox(width: 8),
+            Expanded(child: Text(message)),
+          ],
+        ),
         backgroundColor: Colors.red,
-        duration: const Duration(seconds: 3),
+        duration: const Duration(seconds: 4),
+        action: SnackBarAction(
+          label: 'OK',
+          textColor: Colors.white,
+          onPressed: () {
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          },
+        ),
       ),
     );
   }
@@ -160,10 +306,69 @@ class _NomeEmpresaScreenState extends State<NomeEmpresaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Empresas'),
+        title: const Text('Gestão de Empresas'),
         backgroundColor: Colors.blue.shade600,
         foregroundColor: Colors.white,
         elevation: 2,
+        actions: [
+          IconButton(
+            onPressed: _isLoading ? null : _loadEmpresas,
+            icon:
+                _isLoading
+                    ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                    : const Icon(Icons.refresh),
+            tooltip: 'Recarregar lista',
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (value) async {
+              switch (value) {
+                case 'count':
+                  try {
+                    final count = await _service.contarEmpresas();
+                    _showSuccessSnackBar('Total de empresas: $count');
+                  } catch (e) {
+                    _showErrorSnackBar('Erro ao contar: $e');
+                  }
+                  break;
+                case 'clear_cache':
+                  _service.limparCache();
+                  _showSuccessSnackBar('Cache limpo com sucesso');
+                  break;
+              }
+            },
+            itemBuilder:
+                (context) => [
+                  const PopupMenuItem(
+                    value: 'count',
+                    child: Row(
+                      children: [
+                        Icon(Icons.analytics),
+                        SizedBox(width: 8),
+                        Text('Contar empresas'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'clear_cache',
+                    child: Row(
+                      children: [
+                        Icon(Icons.clear_all),
+                        SizedBox(width: 8),
+                        Text('Limpar cache'),
+                      ],
+                    ),
+                  ),
+                ],
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -199,7 +404,9 @@ class _NomeEmpresaScreenState extends State<NomeEmpresaScreen> {
                       labelText: 'Razão Social',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.business),
+                      helperText: 'Entre 3 e 200 caracteres',
                     ),
+                    maxLength: 200,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return 'Razão Social é obrigatória';
@@ -217,7 +424,9 @@ class _NomeEmpresaScreenState extends State<NomeEmpresaScreen> {
                       labelText: 'Nome Fantasia',
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.store),
+                      helperText: 'Entre 2 e 100 caracteres',
                     ),
+                    maxLength: 100,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return 'Nome Fantasia é obrigatório';
@@ -257,10 +466,30 @@ class _NomeEmpresaScreenState extends State<NomeEmpresaScreen> {
             ),
           ),
 
-          // Lista de empresas salvas
+          // Barra de busca
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: 'Buscar por nome fantasia...',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: () => _loadEmpresas(),
+                  tooltip: 'Limpar busca',
+                ),
+              ),
+              onChanged: _searchByNomeFantasia,
+            ),
+          ),
+
+          // Lista de empresas
           Expanded(
             child: Container(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -268,25 +497,11 @@ class _NomeEmpresaScreenState extends State<NomeEmpresaScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Empresas Cadastradas (${_empresas.length})',
+                        'Empresas (${_empresas.length})',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: Colors.grey.shade700,
                         ),
-                      ),
-                      IconButton(
-                        onPressed: _isLoading ? null : _loadEmpresas,
-                        icon:
-                            _isLoading
-                                ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                                : const Icon(Icons.refresh),
-                        tooltip: 'Atualizar lista',
                       ),
                     ],
                   ),
@@ -295,7 +510,16 @@ class _NomeEmpresaScreenState extends State<NomeEmpresaScreen> {
                   Expanded(
                     child:
                         _isLoading
-                            ? const Center(child: CircularProgressIndicator())
+                            ? const Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  CircularProgressIndicator(),
+                                  SizedBox(height: 16),
+                                  Text('Carregando empresas...'),
+                                ],
+                              ),
+                            )
                             : _empresas.isEmpty
                             ? Center(
                               child: Column(
@@ -308,7 +532,7 @@ class _NomeEmpresaScreenState extends State<NomeEmpresaScreen> {
                                   ),
                                   const SizedBox(height: 16),
                                   Text(
-                                    'Nenhuma empresa cadastrada',
+                                    'Nenhuma empresa encontrada',
                                     style: TextStyle(
                                       fontSize: 18,
                                       color: Colors.grey.shade600,
@@ -347,20 +571,50 @@ class _NomeEmpresaScreenState extends State<NomeEmpresaScreen> {
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    subtitle: Text(
-                                      empresa.razaoSocial,
-                                      style: TextStyle(
-                                        color: Colors.grey.shade600,
-                                      ),
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          empresa.razaoSocial,
+                                          style: TextStyle(
+                                            color: Colors.grey.shade600,
+                                          ),
+                                        ),
+                                        Text(
+                                          'ID: ${empresa.id}',
+                                          style: TextStyle(
+                                            color: Colors.grey.shade500,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    trailing: IconButton(
-                                      onPressed: () => _deleteEmpresa(empresa),
-                                      icon: const Icon(
-                                        Icons.delete_outline,
-                                        color: Colors.red,
-                                      ),
-                                      tooltip: 'Deletar empresa',
+                                    trailing: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          onPressed:
+                                              () =>
+                                                  _showEmpresaDetails(empresa),
+                                          icon: const Icon(
+                                            Icons.info_outline,
+                                            color: Colors.blue,
+                                          ),
+                                          tooltip: 'Ver detalhes',
+                                        ),
+                                        IconButton(
+                                          onPressed:
+                                              () => _deleteEmpresa(empresa),
+                                          icon: const Icon(
+                                            Icons.delete_outline,
+                                            color: Colors.red,
+                                          ),
+                                          tooltip: 'Deletar empresa',
+                                        ),
+                                      ],
                                     ),
+                                    onTap: () => _showEmpresaDetails(empresa),
                                   ),
                                 );
                               },
