@@ -1,3 +1,4 @@
+import 'package:desafio/app/telas/nomeEmpresa_tela.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:desafio/servicos/autenticacao_servico.dart';
@@ -49,6 +50,7 @@ class MyApp extends StatelessWidget {
           '/home': (context) => const HomeTela(),
           '/recados': (context) => const RecadosTela(),
           '/contratos': (context) => const ContratosTela(),
+          '/nomeEmpresa': (context) => const NomeEmpresaScreen()
         },
       ),
     );
