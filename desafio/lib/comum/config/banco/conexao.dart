@@ -17,7 +17,7 @@ class Conexao {
     String path = join(await getDatabasesPath(), 'nahero_app.db');
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: _onConfigure,
@@ -103,6 +103,34 @@ class Conexao {
     );
     await db.execute('CREATE INDEX idx_clausulas_tipo ON clausulas(tipo)');
     await db.execute('CREATE INDEX idx_clausulas_status ON clausulas(status)');
+
+    await db.execute('''
+      CREATE TABLE clausulas_genericas(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nomeClausula TEXT NOT NULL,
+        conteudo TEXT NOT NULL,
+        criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        excluidoEm TIMESTAMP
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE prazos_duracao(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tipoPrazo TEXT NOT NULL,
+        criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        excluidoEm TIMESTAMP
+      )
+    ''');
+
+    await db.execute(
+      'CREATE INDEX idx_clausulas_genericas_nomeClausula ON clausulas_genericas(nomeClausula)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_prazos_duracao_tipoPrazo ON prazos_duracao(tipoPrazo)',
+    );
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -184,6 +212,35 @@ class Conexao {
       );
       await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_clausulas_status ON clausulas(status)',
+      );
+    }
+    if (oldVersion < 3) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS clausulas_genericas(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          nomeClausula TEXT NOT NULL,
+          conteudo TEXT NOT NULL,
+          criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          excluidoEm TIMESTAMP
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS prazos_duracao(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          tipoPrazo TEXT NOT NULL,
+          criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          excluidoEm TIMESTAMP
+        )
+      ''');
+
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_clausulas_genericas_nomeClausula ON clausulas_genericas(nomeClausula)',
+      );
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_prazos_duracao_tipoPrazo ON prazos_duracao(tipoPrazo)',
       );
     }
   }
