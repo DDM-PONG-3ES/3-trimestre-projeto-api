@@ -1,6 +1,7 @@
 import 'package:desafio/app/telas/nomeEmpresa_tela.dart';
 import 'package:desafio/app/telas/objetoSocial_tela.dart';
 import 'package:desafio/app/telas/socio_tela.dart';
+import 'package:desafio/servicos/capitalSocial_servico.dart';
 import 'package:desafio/servicos/objetoSocial_servico.dart';
 import 'package:desafio/servicos/socio_servico.dart';
 import 'package:flutter/material.dart';
@@ -43,9 +44,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => RecadoServico()),
         ChangeNotifierProvider(create: (context) => ContratoServico()),
         ChangeNotifierProvider(create: (context) => ClausulaServico()),
-        ChangeNotifierProvider(create: (context) => SocioServico()),        
+        ChangeNotifierProvider(create: (context) => SocioServico()),
         ChangeNotifierProvider(create: (context) => ObjetoSocialServico()),
         ChangeNotifierProvider(create: (context) => SedeServico()),
+        ChangeNotifierProvider(create: (context) => CapitalSocialServico()),
       ],
       child: MaterialApp(
         title: 'Desafio App',
@@ -61,7 +63,7 @@ class MyApp extends StatelessWidget {
           '/recados': (context) => const RecadosTela(),
           '/contratos': (context) => const ContratosTela(),
           '/nomeEmpresa': (context) => const NomeEmpresaScreen(),
-          '/socios': (context) => const SociosScreen(),              
+          '/socios': (context) => const SociosScreen(),
           '/objetos-sociais': (context) => const ObjetosSociaisScreen(),
           '/prazoDuracao': (context) => const PrazoDuracaoTela(),
           '/clausulaGenerica': (context) => const ClausulaGenericaTela(),
