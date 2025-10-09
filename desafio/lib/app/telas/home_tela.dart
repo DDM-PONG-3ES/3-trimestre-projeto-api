@@ -297,6 +297,22 @@ class _CustomDrawer extends StatelessWidget {
                     ),
                     ListTile(
                       leading: const Icon(Icons.message),
+                      title: const Text('Objeto Social'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed('/objetos-sociais');
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.message),
+                      title: const Text('Socio'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed('/socios');
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.message),
                       title: const Text('Recados'),
                       onTap: () {
                         Navigator.pop(context);
@@ -327,6 +343,7 @@ class _CustomDrawer extends StatelessWidget {
                         );
                       },
                     ),
+                    
                     const Divider(),
                     ListTile(
                       leading: const Icon(Icons.help),
