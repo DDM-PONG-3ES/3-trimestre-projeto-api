@@ -17,7 +17,7 @@ class Conexao {
     String path = join(await getDatabasesPath(), 'nahero_app.db');
     return await openDatabase(
       path,
-      version: 3, 
+      version: 2, 
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: _onConfigure,
