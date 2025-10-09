@@ -17,7 +17,7 @@ class Conexao {
     String path = join(await getDatabasesPath(), 'nahero_app.db');
     return await openDatabase(
       path,
-      version: 2,
+      version: 3, 
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: _onConfigure,
@@ -94,6 +94,33 @@ class Conexao {
       )
     ''');
 
+    // NOVAS TABELAS - Socios e Objetos Sociais
+    await db.execute('''
+      CREATE TABLE socios(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT NOT NULL,
+        statusSocial TEXT NOT NULL,
+        dataNascimento TEXT NOT NULL,
+        cpf TEXT NOT NULL,
+        residencia TEXT NOT NULL,
+        criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        excluidoEm TIMESTAMP
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE objetos_sociais(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        atividadesEconomicas TEXT NOT NULL,
+        atividadesExercidas TEXT NOT NULL,
+        criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        excluidoEm TIMESTAMP
+      )
+    ''');
+
+    // Índices das tabelas originais
     await db.execute(
       'CREATE INDEX idx_contratos_usuario_id ON contratos(usuario_id)',
     );
@@ -103,9 +130,15 @@ class Conexao {
     );
     await db.execute('CREATE INDEX idx_clausulas_tipo ON clausulas(tipo)');
     await db.execute('CREATE INDEX idx_clausulas_status ON clausulas(status)');
+
+    // Índices das novas tabelas
+    await db.execute('CREATE INDEX idx_socios_nome ON socios(nome)');
+    await db.execute('CREATE INDEX idx_socios_cpf ON socios(cpf)');
+    await db.execute('CREATE INDEX idx_socios_status ON socios(statusSocial)');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    // Migração da versão 1 para 2
     if (oldVersion < 2) {
       var result = await db.rawQuery(
         "SELECT sql FROM sqlite_master WHERE type='table' AND name='contratos'",
@@ -186,6 +219,44 @@ class Conexao {
         'CREATE INDEX IF NOT EXISTS idx_clausulas_status ON clausulas(status)',
       );
     }
+
+    // Migração da versão 2 para 3 - Adiciona as novas tabelas
+    if (oldVersion < 3) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS socios(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          nome TEXT NOT NULL,
+          statusSocial TEXT NOT NULL,
+          dataNascimento TEXT NOT NULL,
+          cpf TEXT NOT NULL,
+          residencia TEXT NOT NULL,
+          criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          excluidoEm TIMESTAMP
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS objetos_sociais(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          atividadesEconomicas TEXT NOT NULL,
+          atividadesExercidas TEXT NOT NULL,
+          criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          excluidoEm TIMESTAMP
+        )
+      ''');
+
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_socios_nome ON socios(nome)',
+      );
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_socios_cpf ON socios(cpf)',
+      );
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_socios_status ON socios(statusSocial)',
+      );
+    }
   }
 
   Future<void> close() async {
@@ -218,5 +289,15 @@ class Conexao {
   Future<List<Map<String, dynamic>>> obterInformacoesTabelaClausula() async {
     final db = await database;
     return await db.rawQuery("PRAGMA table_info(clausulas)");
+  }
+
+  Future<List<Map<String, dynamic>>> obterInformacoesTabelaSocio() async {
+    final db = await database;
+    return await db.rawQuery("PRAGMA table_info(socios)");
+  }
+
+  Future<List<Map<String, dynamic>>> obterInformacoesTabelaObjetoSocial() async {
+    final db = await database;
+    return await db.rawQuery("PRAGMA table_info(objetos_sociais)");
   }
 }
