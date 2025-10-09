@@ -1,10 +1,9 @@
+import 'package:desafio/modelo/entidades/capitalSocial/capitalSocial.dart';
+import 'package:desafio/servicos/capitalSocial_servico.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:desafio/servicos/capital_social_servico.dart';
-import 'package:desafio/modelo/entidades/capital_social/capital_social.dart';
 import 'package:desafio/modelo/entidades/clausula/clausula.dart';
-import 'package:intl/intl.dart';
 
 class CapitalSocialTela extends StatefulWidget {
   final Clausula clausula;
@@ -17,7 +16,6 @@ class CapitalSocialTela extends StatefulWidget {
 
 class _CapitalSocialTelaState extends State<CapitalSocialTela> {
   final TextEditingController _pesquisaController = TextEditingController();
-  final NumberFormat _currencyFormat = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
   @override
   void initState() {
@@ -39,35 +37,37 @@ class _CapitalSocialTelaState extends State<CapitalSocialTela> {
   void _mostrarDialogoCapitalSocial({CapitalSocial? capitalSocial}) {
     showDialog(
       context: context,
-      builder: (context) => _CapitalSocialDialog(
-        capitalSocial: capitalSocial,
-        clausulaId: widget.clausula.id!,
-      ),
+      builder:
+          (context) => _CapitalSocialDialog(
+            capitalSocial: capitalSocial,
+            clausulaId: widget.clausula.id!,
+          ),
     );
   }
 
   void _excluirCapitalSocial(CapitalSocial capitalSocial) async {
     final confirmar = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirmar exclusão'),
-        content: const Text(
-          'Tem certeza que deseja excluir este capital social?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(
-              'Excluir',
-              style: TextStyle(color: Colors.red),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Confirmar exclusão'),
+            content: const Text(
+              'Tem certeza que deseja excluir este capital social?',
             ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text(
+                  'Excluir',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
 
     if (confirmar == true && mounted) {
@@ -154,9 +154,7 @@ class _CapitalSocialTelaState extends State<CapitalSocialTela> {
               onChanged: (value) => setState(() {}),
             ),
           ),
-          Expanded(
-            child: _buildCapitaisSociaisList(),
-          ),
+          Expanded(child: _buildCapitaisSociaisList()),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -175,19 +173,26 @@ class _CapitalSocialTelaState extends State<CapitalSocialTela> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        List<CapitalSocial> capitaisSociais = capitalSocialServico.capitaisSociais
-            .where((c) => c.clausulaId == widget.clausula.id)
-            .toList();
+        List<CapitalSocial> capitaisSociais =
+            capitalSocialServico.capitaisSociais
+                .where((c) => c.clausulaId == widget.clausula.id)
+                .toList();
 
         if (_pesquisaController.text.isNotEmpty) {
-          capitaisSociais = capitaisSociais.where((c) =>
-            c.divisaoQuotas?.toLowerCase().contains(
-              _pesquisaController.text.toLowerCase(),
-            ) == true ||
-            c.formaIntegralizacao?.toLowerCase().contains(
-              _pesquisaController.text.toLowerCase(),
-            ) == true
-          ).toList();
+          capitaisSociais =
+              capitaisSociais
+                  .where(
+                    (c) =>
+                        c.divisaoQuotas?.toLowerCase().contains(
+                              _pesquisaController.text.toLowerCase(),
+                            ) ==
+                            true ||
+                        c.formaIntegralizacao?.toLowerCase().contains(
+                              _pesquisaController.text.toLowerCase(),
+                            ) ==
+                            true,
+                  )
+                  .toList();
         }
 
         if (capitaisSociais.isEmpty) {
@@ -218,9 +223,10 @@ class _CapitalSocialTelaState extends State<CapitalSocialTela> {
         }
 
         return RefreshIndicator(
-          onRefresh: () => capitalSocialServico.carregarCapitaisSociaisPorClausula(
-            widget.clausula.id!,
-          ),
+          onRefresh:
+              () => capitalSocialServico.carregarCapitaisSociaisPorClausula(
+                widget.clausula.id!,
+              ),
           child: ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: capitaisSociais.length,
@@ -244,7 +250,7 @@ class _CapitalSocialTelaState extends State<CapitalSocialTela> {
           child: const Icon(Icons.account_balance, color: Colors.white),
         ),
         title: Text(
-          _currencyFormat.format(capitalSocial.valorTotal ?? 0),
+          "iooo",
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         subtitle: Column(
@@ -278,24 +284,25 @@ class _CapitalSocialTelaState extends State<CapitalSocialTela> {
                 break;
             }
           },
-          itemBuilder: (context) => [
-            const PopupMenuItem(
-              value: 'editar',
-              child: ListTile(
-                leading: Icon(Icons.edit),
-                title: Text('Editar'),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            const PopupMenuItem(
-              value: 'excluir',
-              child: ListTile(
-                leading: Icon(Icons.delete, color: Colors.red),
-                title: Text('Excluir', style: TextStyle(color: Colors.red)),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-          ],
+          itemBuilder:
+              (context) => [
+                const PopupMenuItem(
+                  value: 'editar',
+                  child: ListTile(
+                    leading: Icon(Icons.edit),
+                    title: Text('Editar'),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'excluir',
+                  child: ListTile(
+                    leading: Icon(Icons.delete, color: Colors.red),
+                    title: Text('Excluir', style: TextStyle(color: Colors.red)),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ],
         ),
         onTap: () => _mostrarDialogoCapitalSocial(capitalSocial: capitalSocial),
       ),
@@ -469,9 +476,13 @@ class _CapitalSocialDialogState extends State<_CapitalSocialDialog> {
                     prefixText: 'R\$ ',
                     prefixIcon: Icon(Icons.attach_money),
                   ),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
                   inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                    FilteringTextInputFormatter.allow(
+                      RegExp(r'^\d+\.?\d{0,2}'),
+                    ),
                   ],
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
@@ -504,22 +515,24 @@ class _CapitalSocialDialogState extends State<_CapitalSocialDialog> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: _formasIntegralizacao.contains(
-                    _formaIntegralizacaoController.text,
-                  )
-                      ? _formaIntegralizacaoController.text
-                      : _formasIntegralizacao.first,
+                  value:
+                      _formasIntegralizacao.contains(
+                            _formaIntegralizacaoController.text,
+                          )
+                          ? _formaIntegralizacaoController.text
+                          : _formasIntegralizacao.first,
                   decoration: const InputDecoration(
                     labelText: 'Forma de Integralização *',
                     border: OutlineInputBorder(),
                     prefixIcon: Icon(Icons.payments),
                   ),
-                  items: _formasIntegralizacao.map((String forma) {
-                    return DropdownMenuItem<String>(
-                      value: forma,
-                      child: Text(forma),
-                    );
-                  }).toList(),
+                  items:
+                      _formasIntegralizacao.map((String forma) {
+                        return DropdownMenuItem<String>(
+                          value: forma,
+                          child: Text(forma),
+                        );
+                      }).toList(),
                   onChanged: (String? newValue) {
                     if (newValue != null) {
                       setState(() {
@@ -544,7 +557,11 @@ class _CapitalSocialDialogState extends State<_CapitalSocialDialog> {
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.info_outline, color: Colors.blue[700], size: 20),
+                      Icon(
+                        Icons.info_outline,
+                        color: Colors.blue[700],
+                        size: 20,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -570,15 +587,14 @@ class _CapitalSocialDialogState extends State<_CapitalSocialDialog> {
         ),
         ElevatedButton(
           onPressed: _isCarregando ? null : _salvar,
-          child: _isCarregando
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                  ),
-                )
-              : Text(widget.capitalSocial == null ? 'Criar' : 'Salvar'),
+          child:
+              _isCarregando
+                  ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : Text(widget.capitalSocial == null ? 'Criar' : 'Salvar'),
         ),
       ],
     );

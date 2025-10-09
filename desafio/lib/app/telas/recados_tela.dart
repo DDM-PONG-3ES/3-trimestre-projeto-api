@@ -56,7 +56,7 @@ class _RecadosTelaState extends State<RecadosTela>
                 onPressed: () => Navigator.of(context).pop(true),
                 child: const Text(
                   'Excluir',
-                  style: TextStyle(color: Colors.red),
+                  style: TextStyle(color: Color.fromARGB(255, 244, 168, 54)),
                 ),
               ),
             ],

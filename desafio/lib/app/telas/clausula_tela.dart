@@ -1,9 +1,9 @@
+import 'package:desafio/app/telas/capitalSocial_tela.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:desafio/servicos/clausula_servico.dart';
 import 'package:desafio/modelo/entidades/clausula/clausula.dart';
 import 'package:desafio/modelo/entidades/contrato/contrato.dart';
-import 'package:desafio/app/telas/capital_social_tela.dart';
 import 'package:desafio/app/telas/sede_tela.dart';
 
 class ClausulasTela extends StatefulWidget {
@@ -109,9 +109,7 @@ class _ClausulasTelaState extends State<ClausulasTela>
   void _navegarParaSede(Clausula clausula) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => SedeTela(clausula: clausula),
-      ),
+      MaterialPageRoute(builder: (context) => SedeTela(clausula: clausula)),
     );
   }
 
@@ -383,7 +381,10 @@ class _ClausulasTelaState extends State<ClausulasTela>
                       value: 'excluir',
                       child: ListTile(
                         leading: Icon(Icons.delete, color: Colors.red),
-                        title: Text('Excluir', style: TextStyle(color: Colors.red)),
+                        title: Text(
+                          'Excluir',
+                          style: TextStyle(color: Colors.red),
+                        ),
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
@@ -391,9 +392,11 @@ class _ClausulasTelaState extends State<ClausulasTela>
             ),
             onTap: () => _mostrarDialogoClausula(clausula: clausula),
           ),
-          // Botões de navegação para Capital Social e Sede
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+              vertical: 8.0,
+            ),
             child: Row(
               children: [
                 Expanded(

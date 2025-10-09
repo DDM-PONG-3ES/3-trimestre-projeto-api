@@ -79,7 +79,8 @@ class Conexao {
         criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         excluidoEm TIMESTAMP,
-        FOREIGN KEY (usuario_id) REFERENCES usuarios (id) ON DELETE CASCADE
+        FOREIGN KEY (usuario_id) REFERENCES usuarios (id) ON DELETE CASCADE,
+        FOREIGN KEY (clausula_id) REFERENCES clausulas (id) ON DELETE CASCADE
       )
     ''');
 
@@ -247,7 +248,7 @@ class Conexao {
         'CREATE INDEX IF NOT EXISTS idx_clausulas_status ON clausulas(status)',
       );
     }
-    
+
     if (oldVersion < 3) {
       await db.execute('''
         CREATE TABLE IF NOT EXISTS clausulas_genericas(
@@ -305,6 +306,22 @@ class Conexao {
         )
       ''');
 
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS socios(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          nome TEXT NOT NULL,
+          statusSocial TEXT NOT NULL,
+          dataNascimento TEXT NOT NULL,
+          cpf TEXT NOT NULL,
+          residencia TEXT NOT NULL,
+          clausula_id INTEGER NOT NULL,
+          criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          excluidoEm TIMESTAMP,
+          FOREIGN KEY (clausula_id) REFERENCES clausulas (id) ON DELETE CASCADE
+        )
+      ''');
+
       await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_capitais_sociais_clausula_id ON capitais_sociais(clausula_id)',
       );
@@ -346,7 +363,8 @@ class Conexao {
     return await db.rawQuery("PRAGMA table_info(clausulas)");
   }
 
-  Future<List<Map<String, dynamic>>> obterInformacoesTabelaCapitalSocial() async {
+  Future<List<Map<String, dynamic>>>
+  obterInformacoesTabelaCapitalSocial() async {
     final db = await database;
     return await db.rawQuery("PRAGMA table_info(capitais_sociais)");
   }
