@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:desafio/servicos/clausula_servico.dart';
 import 'package:desafio/modelo/entidades/clausula/clausula.dart';
 import 'package:desafio/modelo/entidades/contrato/contrato.dart';
+import 'package:desafio/app/telas/capital_social_tela.dart';
+import 'package:desafio/app/telas/sede_tela.dart';
 
 class ClausulasTela extends StatefulWidget {
   final Contrato contrato;
@@ -93,6 +95,24 @@ class _ClausulasTelaState extends State<ClausulasTela>
         );
       }
     }
+  }
+
+  void _navegarParaCapitalSocial(Clausula clausula) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CapitalSocialTela(clausula: clausula),
+      ),
+    );
+  }
+
+  void _navegarParaSede(Clausula clausula) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SedeTela(clausula: clausula),
+      ),
+    );
   }
 
   @override
@@ -304,70 +324,107 @@ class _ClausulasTelaState extends State<ClausulasTela>
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: statusColor,
-          child: Icon(statusIcon, color: Colors.white),
-        ),
-        title: Text(
-          clausula.tipo ?? 'Tipo não informado',
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (clausula.texto?.isNotEmpty == true) ...[
-              const SizedBox(height: 4),
-              Text(
-                clausula.texto!,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Colors.grey[600]),
-              ),
-            ],
-            const SizedBox(height: 4),
-            Text(
-              'Status: ${clausula.status ?? 'Não informado'}',
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+      child: Column(
+        children: [
+          ListTile(
+            leading: CircleAvatar(
+              backgroundColor: statusColor,
+              child: Icon(statusIcon, color: Colors.white),
             ),
-            Text(
-              'Criado em ${_formatarData(clausula.criadoEm)}',
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            title: Text(
+              clausula.tipo ?? 'Tipo não informado',
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-          ],
-        ),
-        trailing: PopupMenuButton<String>(
-          onSelected: (value) {
-            switch (value) {
-              case 'editar':
-                _mostrarDialogoClausula(clausula: clausula);
-                break;
-              case 'excluir':
-                _excluirClausula(clausula);
-                break;
-            }
-          },
-          itemBuilder:
-              (context) => [
-                const PopupMenuItem(
-                  value: 'editar',
-                  child: ListTile(
-                    leading: Icon(Icons.edit),
-                    title: Text('Editar'),
-                    contentPadding: EdgeInsets.zero,
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (clausula.texto?.isNotEmpty == true) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    clausula.texto!,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: Colors.grey[600]),
+                  ),
+                ],
+                const SizedBox(height: 4),
+                Text(
+                  'Status: ${clausula.status ?? 'Não informado'}',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+                Text(
+                  'Criado em ${_formatarData(clausula.criadoEm)}',
+                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                ),
+              ],
+            ),
+            trailing: PopupMenuButton<String>(
+              onSelected: (value) {
+                switch (value) {
+                  case 'editar':
+                    _mostrarDialogoClausula(clausula: clausula);
+                    break;
+                  case 'excluir':
+                    _excluirClausula(clausula);
+                    break;
+                }
+              },
+              itemBuilder:
+                  (context) => [
+                    const PopupMenuItem(
+                      value: 'editar',
+                      child: ListTile(
+                        leading: Icon(Icons.edit),
+                        title: Text('Editar'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'excluir',
+                      child: ListTile(
+                        leading: Icon(Icons.delete, color: Colors.red),
+                        title: Text('Excluir', style: TextStyle(color: Colors.red)),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ],
+            ),
+            onTap: () => _mostrarDialogoClausula(clausula: clausula),
+          ),
+          // Botões de navegação para Capital Social e Sede
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _navegarParaCapitalSocial(clausula),
+                    icon: const Icon(Icons.account_balance, size: 18),
+                    label: const Text('Capital Social'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                    ),
                   ),
                 ),
-                const PopupMenuItem(
-                  value: 'excluir',
-                  child: ListTile(
-                    leading: Icon(Icons.delete, color: Colors.red),
-                    title: Text('Excluir', style: TextStyle(color: Colors.red)),
-                    contentPadding: EdgeInsets.zero,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _navegarParaSede(clausula),
+                    icon: const Icon(Icons.location_on, size: 18),
+                    label: const Text('Sede'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepOrange,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                    ),
                   ),
                 ),
               ],
-        ),
-        onTap: () => _mostrarDialogoClausula(clausula: clausula),
+            ),
+          ),
+        ],
       ),
     );
   }
