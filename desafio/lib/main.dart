@@ -15,6 +15,8 @@ import 'package:desafio/app/telas/cadastro_tela.dart';
 import 'package:desafio/app/telas/home_tela.dart';
 import 'package:desafio/app/telas/recados_tela.dart';
 import 'package:desafio/app/telas/contrato_tela.dart';
+import 'package:desafio/app/telas/prazoDuracao_tela.dart';
+import 'package:desafio/app/telas/clausulaGenerica_tela.dart';
 import 'dart:io';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -61,6 +63,8 @@ class MyApp extends StatelessWidget {
           '/nomeEmpresa': (context) => const NomeEmpresaScreen(),
           '/socios': (context) => const SociosScreen(),              
           '/objetos-sociais': (context) => const ObjetosSociaisScreen(),
+          '/prazoDuracao': (context) => const PrazoDuracaoTela(),
+          '/clausulaGenerica': (context) => const ClausulaGenericaTela(),
         },
       ),
     );
