@@ -450,7 +450,8 @@ class Conexao {
     return await db.rawQuery("PRAGMA table_info(socios)");
   }
 
-  Future<List<Map<String, dynamic>>> obterInformacoesTabelaObjetoSocial() async {
+  Future<List<Map<String, dynamic>>>
+  obterInformacoesTabelaObjetoSocial() async {
     final db = await database;
     return await db.rawQuery("PRAGMA table_info(objetos_sociais)");
   }
