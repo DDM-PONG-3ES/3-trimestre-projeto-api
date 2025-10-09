@@ -145,17 +145,6 @@ class _CadastroTelaState extends State<CadastroTela> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Por favor, insira seu email';
-                              }
-                              if (!RegExp(
-                                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                              ).hasMatch(value)) {
-                                return 'Email inválido';
-                              }
-                              return null;
-                            },
                           ),
                           const SizedBox(height: 16),
 

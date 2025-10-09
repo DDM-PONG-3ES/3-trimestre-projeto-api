@@ -17,7 +17,7 @@ class Conexao {
     String path = join(await getDatabasesPath(), 'nahero_app.db');
     return await openDatabase(
       path,
-      version: 2, 
+      version: 4,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: _onConfigure,
@@ -79,7 +79,8 @@ class Conexao {
         criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         excluidoEm TIMESTAMP,
-        FOREIGN KEY (usuario_id) REFERENCES usuarios (id) ON DELETE CASCADE
+        FOREIGN KEY (usuario_id) REFERENCES usuarios (id) ON DELETE CASCADE,
+        FOREIGN KEY (clausula_id) REFERENCES clausulas (id) ON DELETE CASCADE
       )
     ''');
 
@@ -130,6 +131,67 @@ class Conexao {
     );
     await db.execute('CREATE INDEX idx_clausulas_tipo ON clausulas(tipo)');
     await db.execute('CREATE INDEX idx_clausulas_status ON clausulas(status)');
+
+    await db.execute('''
+      CREATE TABLE clausulas_genericas(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nomeClausula TEXT NOT NULL,
+        conteudo TEXT NOT NULL,
+        criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        excluidoEm TIMESTAMP
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE prazos_duracao(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        tipoPrazo TEXT NOT NULL,
+        criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        excluidoEm TIMESTAMP
+      )
+    ''');
+
+    await db.execute(
+      'CREATE INDEX idx_clausulas_genericas_nomeClausula ON clausulas_genericas(nomeClausula)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_prazos_duracao_tipoPrazo ON prazos_duracao(tipoPrazo)',
+    );
+
+    await db.execute('''
+      CREATE TABLE capitais_sociais(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        valorTotal REAL NOT NULL,
+        divisaoQuotas TEXT NOT NULL,
+        formaIntegralizacao TEXT NOT NULL,
+        clausula_id INTEGER NOT NULL,
+        criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        excluidoEm TIMESTAMP,
+        FOREIGN KEY (clausula_id) REFERENCES clausulas (id) ON DELETE CASCADE
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE sedes(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        enderecoCompleto TEXT NOT NULL,
+        clausula_id INTEGER NOT NULL,
+        criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        excluidoEm TIMESTAMP,
+        FOREIGN KEY (clausula_id) REFERENCES clausulas (id) ON DELETE CASCADE
+      )
+    ''');
+
+    await db.execute(
+      'CREATE INDEX idx_capitais_sociais_clausula_id ON capitais_sociais(clausula_id)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_sedes_clausula_id ON sedes(clausula_id)',
+    );
 
     // Índices das novas tabelas
     await db.execute('CREATE INDEX idx_socios_nome ON socios(nome)');
@@ -220,6 +282,87 @@ class Conexao {
       );
     }
 
+    if (oldVersion < 3) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS clausulas_genericas(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          nomeClausula TEXT NOT NULL,
+          conteudo TEXT NOT NULL,
+          criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          excluidoEm TIMESTAMP
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS prazos_duracao(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          tipoPrazo TEXT NOT NULL,
+          criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          excluidoEm TIMESTAMP
+        )
+      ''');
+
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_clausulas_genericas_nomeClausula ON clausulas_genericas(nomeClausula)',
+      );
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_prazos_duracao_tipoPrazo ON prazos_duracao(tipoPrazo)',
+      );
+    }
+
+    if (oldVersion < 4) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS capitais_sociais(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          valorTotal REAL NOT NULL,
+          divisaoQuotas TEXT NOT NULL,
+          formaIntegralizacao TEXT NOT NULL,
+          clausula_id INTEGER NOT NULL,
+          criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          excluidoEm TIMESTAMP,
+          FOREIGN KEY (clausula_id) REFERENCES clausulas (id) ON DELETE CASCADE
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS sedes(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          enderecoCompleto TEXT NOT NULL,
+          clausula_id INTEGER NOT NULL,
+          criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          excluidoEm TIMESTAMP,
+          FOREIGN KEY (clausula_id) REFERENCES clausulas (id) ON DELETE CASCADE
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS socios(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          nome TEXT NOT NULL,
+          statusSocial TEXT NOT NULL,
+          dataNascimento TEXT NOT NULL,
+          cpf TEXT NOT NULL,
+          residencia TEXT NOT NULL,
+          clausula_id INTEGER NOT NULL,
+          criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          excluidoEm TIMESTAMP,
+          FOREIGN KEY (clausula_id) REFERENCES clausulas (id) ON DELETE CASCADE
+        )
+      ''');
+
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_capitais_sociais_clausula_id ON capitais_sociais(clausula_id)',
+      );
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_sedes_clausula_id ON sedes(clausula_id)',
+      );
+    }
+
     // Migração da versão 2 para 3 - Adiciona as novas tabelas
     if (oldVersion < 3) {
       await db.execute('''
@@ -289,6 +432,17 @@ class Conexao {
   Future<List<Map<String, dynamic>>> obterInformacoesTabelaClausula() async {
     final db = await database;
     return await db.rawQuery("PRAGMA table_info(clausulas)");
+  }
+
+  Future<List<Map<String, dynamic>>>
+  obterInformacoesTabelaCapitalSocial() async {
+    final db = await database;
+    return await db.rawQuery("PRAGMA table_info(capitais_sociais)");
+  }
+
+  Future<List<Map<String, dynamic>>> obterInformacoesTabelaSede() async {
+    final db = await database;
+    return await db.rawQuery("PRAGMA table_info(sedes)");
   }
 
   Future<List<Map<String, dynamic>>> obterInformacoesTabelaSocio() async {
