@@ -17,7 +17,7 @@ class Conexao {
     String path = join(await getDatabasesPath(), 'nahero_app.db');
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: _onConfigure,
@@ -131,6 +131,39 @@ class Conexao {
     await db.execute(
       'CREATE INDEX idx_prazos_duracao_tipoPrazo ON prazos_duracao(tipoPrazo)',
     );
+
+    await db.execute('''
+      CREATE TABLE capitais_sociais(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        valorTotal REAL NOT NULL,
+        divisaoQuotas TEXT NOT NULL,
+        formaIntegralizacao TEXT NOT NULL,
+        clausula_id INTEGER NOT NULL,
+        criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        excluidoEm TIMESTAMP,
+        FOREIGN KEY (clausula_id) REFERENCES clausulas (id) ON DELETE CASCADE
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE sedes(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        enderecoCompleto TEXT NOT NULL,
+        clausula_id INTEGER NOT NULL,
+        criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        excluidoEm TIMESTAMP,
+        FOREIGN KEY (clausula_id) REFERENCES clausulas (id) ON DELETE CASCADE
+      )
+    ''');
+
+    await db.execute(
+      'CREATE INDEX idx_capitais_sociais_clausula_id ON capitais_sociais(clausula_id)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_sedes_clausula_id ON sedes(clausula_id)',
+    );
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -214,6 +247,7 @@ class Conexao {
         'CREATE INDEX IF NOT EXISTS idx_clausulas_status ON clausulas(status)',
       );
     }
+    
     if (oldVersion < 3) {
       await db.execute('''
         CREATE TABLE IF NOT EXISTS clausulas_genericas(
@@ -241,6 +275,41 @@ class Conexao {
       );
       await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_prazos_duracao_tipoPrazo ON prazos_duracao(tipoPrazo)',
+      );
+    }
+
+    if (oldVersion < 4) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS capitais_sociais(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          valorTotal REAL NOT NULL,
+          divisaoQuotas TEXT NOT NULL,
+          formaIntegralizacao TEXT NOT NULL,
+          clausula_id INTEGER NOT NULL,
+          criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          excluidoEm TIMESTAMP,
+          FOREIGN KEY (clausula_id) REFERENCES clausulas (id) ON DELETE CASCADE
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS sedes(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          enderecoCompleto TEXT NOT NULL,
+          clausula_id INTEGER NOT NULL,
+          criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          excluidoEm TIMESTAMP,
+          FOREIGN KEY (clausula_id) REFERENCES clausulas (id) ON DELETE CASCADE
+        )
+      ''');
+
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_capitais_sociais_clausula_id ON capitais_sociais(clausula_id)',
+      );
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_sedes_clausula_id ON sedes(clausula_id)',
       );
     }
   }
@@ -275,5 +344,15 @@ class Conexao {
   Future<List<Map<String, dynamic>>> obterInformacoesTabelaClausula() async {
     final db = await database;
     return await db.rawQuery("PRAGMA table_info(clausulas)");
+  }
+
+  Future<List<Map<String, dynamic>>> obterInformacoesTabelaCapitalSocial() async {
+    final db = await database;
+    return await db.rawQuery("PRAGMA table_info(capitais_sociais)");
+  }
+
+  Future<List<Map<String, dynamic>>> obterInformacoesTabelaSede() async {
+    final db = await database;
+    return await db.rawQuery("PRAGMA table_info(sedes)");
   }
 }
