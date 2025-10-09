@@ -5,6 +5,8 @@ import 'package:desafio/servicos/autenticacao_servico.dart';
 import 'package:desafio/servicos/recado_servico.dart';
 import 'package:desafio/servicos/contrato_servico.dart';
 import 'package:desafio/servicos/clausula_servico.dart';
+import 'package:desafio/servicos/capital_social_servico.dart';
+import 'package:desafio/servicos/sede_servico.dart';
 import 'package:desafio/app/telas/login_tela.dart';
 import 'package:desafio/app/telas/cadastro_tela.dart';
 import 'package:desafio/app/telas/home_tela.dart';
@@ -36,6 +38,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => RecadoServico()),
         ChangeNotifierProvider(create: (context) => ContratoServico()),
         ChangeNotifierProvider(create: (context) => ClausulaServico()),
+        ChangeNotifierProvider(create: (context) => CapitalSocialServico()),
+        ChangeNotifierProvider(create: (context) => SedeServico()),
       ],
       child: MaterialApp(
         title: 'Desafio App',
@@ -50,7 +54,7 @@ class MyApp extends StatelessWidget {
           '/home': (context) => const HomeTela(),
           '/recados': (context) => const RecadosTela(),
           '/contratos': (context) => const ContratosTela(),
-          '/nomeEmpresa': (context) => const NomeEmpresaScreen()
+          '/nomeEmpresa': (context) => const NomeEmpresaScreen(),
         },
       ),
     );
