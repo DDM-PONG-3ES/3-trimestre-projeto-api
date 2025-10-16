@@ -220,32 +220,82 @@ class _SedeDialogState extends State<_SedeDialog> {
 
   void _parseEndereco(String end) {
     final partes = end.split(',').map((e) => e.trim()).toList();
-    if (partes.isNotEmpty) _controllers['rua']!.text = partes[0];
-    if (partes.length > 1) _controllers['numero']!.text = partes[1];
-    if (partes.length > 2) _controllers['complemento']!.text = partes[2];
-    if (partes.length > 3) _controllers['bairro']!.text = partes[3];
-    if (partes.length > 4) {
-      final ce = partes[4].split('-').map((e) => e.trim()).toList();
-      if (ce.isNotEmpty) _controllers['cidade']!.text = ce[0];
-      if (ce.length > 1) _controllers['estado']!.text = ce[1];
+    
+    // Parse com verificação de índice
+    if (partes.length > 0 && partes[0].isNotEmpty) {
+      _controllers['rua']!.text = partes[0];
     }
-    if (partes.length > 5) _controllers['cep']!.text = partes[5].replaceAll('CEP:', '').trim();
+    if (partes.length > 1 && partes[1].isNotEmpty) {
+      _controllers['numero']!.text = partes[1];
+    }
+    if (partes.length > 2 && partes[2].isNotEmpty) {
+      _controllers['complemento']!.text = partes[2];
+    }
+    if (partes.length > 3 && partes[3].isNotEmpty) {
+      // Verifica se contém " - " para separar cidade e estado
+      if (partes[3].contains(' - ')) {
+        final cidadeEstado = partes[3].split(' - ').map((e) => e.trim()).toList();
+        if (cidadeEstado.isNotEmpty) _controllers['cidade']!.text = cidadeEstado[0];
+        if (cidadeEstado.length > 1) _controllers['estado']!.text = cidadeEstado[1];
+      } else {
+        _controllers['bairro']!.text = partes[3];
+      }
+    }
+    if (partes.length > 4 && partes[4].isNotEmpty) {
+      // Se tem 5+ partes, posição 4 deve ser cidade-estado
+      if (partes[4].contains(' - ')) {
+        final cidadeEstado = partes[4].split(' - ').map((e) => e.trim()).toList();
+        if (cidadeEstado.isNotEmpty) _controllers['cidade']!.text = cidadeEstado[0];
+        if (cidadeEstado.length > 1) _controllers['estado']!.text = cidadeEstado[1];
+      } else {
+        _controllers['cidade']!.text = partes[4];
+      }
+    }
+    if (partes.length > 5 && partes[5].isNotEmpty) {
+      // Remove "CEP: " se existir
+      final cep = partes[5].replaceAll('CEP:', '').replaceAll('CEP', '').trim();
+      _controllers['cep']!.text = cep;
+    }
   }
 
   String _montarEndereco() {
-    final p = <String>[];
-    _controllers.forEach((k, v) {
-      if (k != 'estado' && v.text.trim().isNotEmpty) {
-        p.add(v.text.trim());
+    final partes = <String>[];
+    
+    // Adiciona rua
+    if (_controllers['rua']!.text.trim().isNotEmpty) {
+      partes.add(_controllers['rua']!.text.trim());
+    }
+    
+    // Adiciona número
+    if (_controllers['numero']!.text.trim().isNotEmpty) {
+      partes.add(_controllers['numero']!.text.trim());
+    }
+    
+    // Adiciona complemento
+    if (_controllers['complemento']!.text.trim().isNotEmpty) {
+      partes.add(_controllers['complemento']!.text.trim());
+    }
+    
+    // Adiciona bairro
+    if (_controllers['bairro']!.text.trim().isNotEmpty) {
+      partes.add(_controllers['bairro']!.text.trim());
+    }
+    
+    // Adiciona cidade e estado juntos
+    if (_controllers['cidade']!.text.trim().isNotEmpty) {
+      String cidadeEstado = _controllers['cidade']!.text.trim();
+      if (_controllers['estado']!.text.trim().isNotEmpty) {
+        cidadeEstado += ' - ${_controllers['estado']!.text.trim()}';
       }
-    });
-    if (p.length >= 4 && _controllers['estado']!.text.isNotEmpty) {
-      p[3] = '${p[3]} - ${_controllers['estado']!.text}';
+      partes.add(cidadeEstado);
     }
-    if (_controllers['cep']!.text.isNotEmpty) {
-      p.add('CEP: ${_controllers['cep']!.text}');
+    
+    // Adiciona CEP
+    if (_controllers['cep']!.text.trim().isNotEmpty) {
+      partes.add('CEP: ${_controllers['cep']!.text.trim()}');
     }
-    return p.join(', ');
+    
+    return partes.join(', ');
   }
 
   Future<void> _salvar() async {
