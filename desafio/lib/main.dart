@@ -48,6 +48,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => ObjetoSocialServico()),
         ChangeNotifierProvider(create: (context) => SedeServico()),
         ChangeNotifierProvider(create: (context) => CapitalSocialServico()),
+        ChangeNotifierProvider(create: (context) => PrazoDuracaoServico()),
       ],
       child: MaterialApp(
         title: 'Desafio App',
@@ -65,7 +66,7 @@ class MyApp extends StatelessWidget {
           '/nomeEmpresa': (context) => const NomeEmpresaScreen(),
           '/socios': (context) => const SociosScreen(),
           '/objetos-sociais': (context) => const ObjetosSociaisScreen(),
-          '/prazoDuracao': (context) => const PrazoDuracaoTela(),
+          '/prazos-duracao': (context) => const PrazosDuracaoTela(),
           '/clausulaGenerica': (context) => const ClausulaGenericaTela(),
         },
       ),
