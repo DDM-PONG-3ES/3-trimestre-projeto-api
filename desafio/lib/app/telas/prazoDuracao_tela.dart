@@ -109,18 +109,13 @@ class _PrazosDuracaoTelaState extends State<PrazosDuracaoTela> {
             itemCount: prazos.length,
             itemBuilder: (context, index) {
               final prazo = prazos[index];
-              final isIndet = prazo.tipoPrazo?.contains('Indeterminado') ?? false;
-              final isProj = prazo.tipoPrazo?.contains('projeto') ?? false;
               
               return Card(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: isIndet ? Colors.green : isProj ? Colors.orange : Theme.of(context).primaryColor,
-                    child: Icon(
-                      isIndet ? Icons.all_inclusive : isProj ? Icons.work_outline : Icons.schedule,
-                      color: Colors.white,
-                    ),
+                    backgroundColor: Theme.of(context).primaryColor,
+                    child: const Icon(Icons.schedule, color: Colors.white),
                   ),
                   title: Text(prazo.tipoPrazo ?? 'Não informado', style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Text('Criado ${_formatarData(prazo.criadoEm)}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
@@ -191,10 +186,7 @@ class _PrazoDuracaoDialog extends StatefulWidget {
 class _PrazoDuracaoDialogState extends State<_PrazoDuracaoDialog> {
   final _formKey = GlobalKey<FormState>();
   final _mesesController = TextEditingController();
-  final _descricaoController = TextEditingController();
   bool _carregando = false;
-  String _tipo = 'determinado';
-  bool _renovavel = false;
 
   @override
   void initState() {
@@ -203,23 +195,14 @@ class _PrazoDuracaoDialogState extends State<_PrazoDuracaoDialog> {
   }
 
   void _carregarDados(String prazo) {
-    if (prazo.contains('Indeterminado')) {
-      _tipo = 'indeterminado';
-    } else if (prazo.contains('projeto')) {
-      _tipo = 'projeto';
-      final match = RegExp(r'projeto:\s*(.+)').firstMatch(prazo);
-      if (match != null) _descricaoController.text = match.group(1) ?? '';
+    final matchMeses = RegExp(r'(\d+)\s*meses?').firstMatch(prazo);
+    if (matchMeses != null) {
+      _mesesController.text = matchMeses.group(1) ?? '';
     } else {
-      _renovavel = prazo.contains('Renovável');
-      final matchMeses = RegExp(r'(\d+)\s*meses?').firstMatch(prazo);
-      if (matchMeses != null) {
-        _mesesController.text = matchMeses.group(1) ?? '';
-      } else {
-        final matchAnos = RegExp(r'(\d+)\s*anos?').firstMatch(prazo);
-        if (matchAnos != null) {
-          final anos = int.parse(matchAnos.group(1) ?? '0');
-          _mesesController.text = (anos * 12).toString();
-        }
+      final matchAnos = RegExp(r'(\d+)\s*anos?').firstMatch(prazo);
+      if (matchAnos != null) {
+        final anos = int.parse(matchAnos.group(1) ?? '0');
+        _mesesController.text = (anos * 12).toString();
       }
     }
   }
@@ -227,14 +210,10 @@ class _PrazoDuracaoDialogState extends State<_PrazoDuracaoDialog> {
   @override
   void dispose() {
     _mesesController.dispose();
-    _descricaoController.dispose();
     super.dispose();
   }
 
   String _gerarPrazo() {
-    if (_tipo == 'indeterminado') return 'Prazo Indeterminado';
-    if (_tipo == 'projeto') return 'Até conclusão do projeto: ${_descricaoController.text.trim()}';
-
     final totalMeses = int.parse(_mesesController.text);
     final anos = totalMeses ~/ 12;
     final meses = totalMeses % 12;
@@ -244,7 +223,7 @@ class _PrazoDuracaoDialogState extends State<_PrazoDuracaoDialog> {
       ? '$anos ${anos == 1 ? 'ano' : 'anos'}${meses > 0 ? ' e $meses ${meses == 1 ? 'mês' : 'meses'}' : ''}'
       : '$totalMeses ${totalMeses == 1 ? 'mês' : 'meses'}';
 
-    return _renovavel ? '$prazo (Renovável automaticamente)' : prazo;
+    return prazo;
   }
 
   Future<void> _salvar() async {
@@ -296,93 +275,43 @@ class _PrazoDuracaoDialogState extends State<_PrazoDuracaoDialog> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Wrap(
-                spacing: 8,
-                children: [
-                  ChoiceChip(
-                    label: const Text('Determinado'),
-                    selected: _tipo == 'determinado',
-                    onSelected: (v) => setState(() {
-                      _tipo = 'determinado';
-                      _mesesController.clear();
-                      _descricaoController.clear();
-                      _renovavel = false;
-                    }),
-                  ),
-                  ChoiceChip(
-                    label: const Text('Indeterminado'),
-                    selected: _tipo == 'indeterminado',
-                    onSelected: (v) => setState(() {
-                      _tipo = 'indeterminado';
-                      _mesesController.clear();
-                      _descricaoController.clear();
-                    }),
-                  ),
-                  ChoiceChip(
-                    label: const Text('Por Projeto'),
-                    selected: _tipo == 'projeto',
-                    onSelected: (v) => setState(() {
-                      _tipo = 'projeto';
-                      _mesesController.clear();
-                      _descricaoController.clear();
-                    }),
-                  ),
-                ],
+              TextFormField(
+                controller: _mesesController,
+                decoration: const InputDecoration(
+                  labelText: 'Duração em Meses *',
+                  prefixIcon: Icon(Icons.calendar_month),
+                  border: OutlineInputBorder(),
+                  helperText: 'Ex: 12 meses = 1 ano',
+                ),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                validator: (v) {
+                  if (v?.isEmpty ?? true) return 'Campo obrigatório';
+                  final n = int.tryParse(v!);
+                  return (n == null || n < 1 || n > 600) ? 'Entre 1 e 600 meses' : null;
+                },
               ),
-              const SizedBox(height: 20),
-              if (_tipo == 'determinado') ...[
-                TextFormField(
-                  controller: _mesesController,
-                  decoration: const InputDecoration(
-                    labelText: 'Duração em Meses *',
-                    prefixIcon: Icon(Icons.calendar_month),
-                    border: OutlineInputBorder(),
-                    helperText: 'Ex: 12 meses = 1 ano',
-                  ),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  validator: (v) {
-                    if (v?.isEmpty ?? true) return 'Campo obrigatório';
-                    final n = int.tryParse(v!);
-                    return (n == null || n < 1 || n > 600) ? 'Entre 1 e 600 meses' : null;
-                  },
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.shade200),
                 ),
-                const SizedBox(height: 12),
-                CheckboxListTile(
-                  value: _renovavel,
-                  onChanged: (v) => setState(() => _renovavel = v ?? false),
-                  title: const Text('Renovável automaticamente'),
-                  contentPadding: EdgeInsets.zero,
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.blue[700], size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Informe a duração do prazo em meses (máximo 600 meses / 50 anos).',
+                        style: TextStyle(fontSize: 12, color: Colors.blue[900]),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-              if (_tipo == 'projeto')
-                TextFormField(
-                  controller: _descricaoController,
-                  decoration: const InputDecoration(
-                    labelText: 'Descrição do Projeto *',
-                    prefixIcon: Icon(Icons.work_outline),
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (v) => v?.trim().isEmpty ?? true ? 'Campo obrigatório' : null,
-                  maxLength: 200,
-                  maxLines: 2,
-                ),
-              if (_tipo == 'indeterminado')
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.green.shade50,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.green.shade200),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.all_inclusive, color: Colors.green, size: 32),
-                      SizedBox(width: 12),
-                      Expanded(child: Text('Sem data de término.')),
-                    ],
-                  ),
-                ),
+              ),
             ],
           ),
         ),
