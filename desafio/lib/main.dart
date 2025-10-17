@@ -3,6 +3,7 @@ import 'package:desafio/app/telas/objetoSocial_tela.dart';
 import 'package:desafio/app/telas/socio_tela.dart';
 import 'package:desafio/servicos/capitalSocial_servico.dart';
 import 'package:desafio/servicos/objetoSocial_servico.dart';
+import 'package:desafio/servicos/prazoDuracao_servico.dart';
 import 'package:desafio/servicos/socio_servico.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
