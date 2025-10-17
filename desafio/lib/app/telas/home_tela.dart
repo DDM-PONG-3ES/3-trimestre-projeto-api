@@ -320,6 +320,14 @@ class _CustomDrawer extends StatelessWidget {
                       },
                     ),
                     ListTile(
+                      leading: const Icon(Icons.schedule),
+                      title: const Text('Prazo de Duração'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed('/prazos-duracao');
+                      },
+                    ),
+                    ListTile(
                       leading: const Icon(Icons.person),
                       title: const Text('Perfil'),
                       onTap: () {
@@ -343,7 +351,7 @@ class _CustomDrawer extends StatelessWidget {
                         );
                       },
                     ),
-                    
+
                     const Divider(),
                     ListTile(
                       leading: const Icon(Icons.help),
