@@ -17,7 +17,7 @@ class Conexao {
     String path = join(await getDatabasesPath(), 'nahero_app.db');
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: _onConfigure,
@@ -95,7 +95,6 @@ class Conexao {
       )
     ''');
 
-    // NOVAS TABELAS - Socios e Objetos Sociais
     await db.execute('''
       CREATE TABLE socios(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -121,17 +120,6 @@ class Conexao {
       )
     ''');
 
-    // Índices das tabelas originais
-    await db.execute(
-      'CREATE INDEX idx_contratos_usuario_id ON contratos(usuario_id)',
-    );
-    await db.execute('CREATE INDEX idx_contratos_status ON contratos(status)');
-    await db.execute(
-      'CREATE INDEX idx_clausulas_contrato_id ON clausulas(contrato_id)',
-    );
-    await db.execute('CREATE INDEX idx_clausulas_tipo ON clausulas(tipo)');
-    await db.execute('CREATE INDEX idx_clausulas_status ON clausulas(status)');
-
     await db.execute('''
       CREATE TABLE clausulas_genericas(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -152,13 +140,6 @@ class Conexao {
         excluidoEm TIMESTAMP
       )
     ''');
-
-    await db.execute(
-      'CREATE INDEX idx_clausulas_genericas_nomeClausula ON clausulas_genericas(nomeClausula)',
-    );
-    await db.execute(
-      'CREATE INDEX idx_prazos_duracao_tipoPrazo ON prazos_duracao(tipoPrazo)',
-    );
 
     await db.execute('''
       CREATE TABLE capitais_sociais(
@@ -186,14 +167,47 @@ class Conexao {
       )
     ''');
 
+    await db.execute('''
+      CREATE TABLE administracoes(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nomeAdministrador TEXT NOT NULL,
+        poderesAdministrativos TEXT NOT NULL,
+        clausula_id INTEGER NOT NULL,
+        criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        excluidoEm TIMESTAMP,
+        FOREIGN KEY (clausula_id) REFERENCES clausulas (id) ON DELETE CASCADE
+      )
+    ''');
+
+    // Índices
+    await db.execute(
+      'CREATE INDEX idx_contratos_usuario_id ON contratos(usuario_id)',
+    );
+    await db.execute('CREATE INDEX idx_contratos_status ON contratos(status)');
+    await db.execute(
+      'CREATE INDEX idx_clausulas_contrato_id ON clausulas(contrato_id)',
+    );
+    await db.execute('CREATE INDEX idx_clausulas_tipo ON clausulas(tipo)');
+    await db.execute('CREATE INDEX idx_clausulas_status ON clausulas(status)');
+    await db.execute(
+      'CREATE INDEX idx_clausulas_genericas_nomeClausula ON clausulas_genericas(nomeClausula)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_prazos_duracao_tipoPrazo ON prazos_duracao(tipoPrazo)',
+    );
     await db.execute(
       'CREATE INDEX idx_capitais_sociais_clausula_id ON capitais_sociais(clausula_id)',
     );
     await db.execute(
       'CREATE INDEX idx_sedes_clausula_id ON sedes(clausula_id)',
     );
-
-    // Índices das novas tabelas
+    await db.execute(
+      'CREATE INDEX idx_administracoes_clausula_id ON administracoes(clausula_id)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_administracoes_nomeAdministrador ON administracoes(nomeAdministrador)',
+    );
     await db.execute('CREATE INDEX idx_socios_nome ON socios(nome)');
     await db.execute('CREATE INDEX idx_socios_cpf ON socios(cpf)');
     await db.execute('CREATE INDEX idx_socios_status ON socios(statusSocial)');
@@ -310,61 +324,7 @@ class Conexao {
       await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_prazos_duracao_tipoPrazo ON prazos_duracao(tipoPrazo)',
       );
-    }
 
-    if (oldVersion < 4) {
-      await db.execute('''
-        CREATE TABLE IF NOT EXISTS capitais_sociais(
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          valorTotal REAL NOT NULL,
-          divisaoQuotas TEXT NOT NULL,
-          formaIntegralizacao TEXT NOT NULL,
-          clausula_id INTEGER NOT NULL,
-          criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          excluidoEm TIMESTAMP,
-          FOREIGN KEY (clausula_id) REFERENCES clausulas (id) ON DELETE CASCADE
-        )
-      ''');
-
-      await db.execute('''
-        CREATE TABLE IF NOT EXISTS sedes(
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          enderecoCompleto TEXT NOT NULL,
-          clausula_id INTEGER NOT NULL,
-          criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          excluidoEm TIMESTAMP,
-          FOREIGN KEY (clausula_id) REFERENCES clausulas (id) ON DELETE CASCADE
-        )
-      ''');
-
-      await db.execute('''
-        CREATE TABLE IF NOT EXISTS socios(
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          nome TEXT NOT NULL,
-          statusSocial TEXT NOT NULL,
-          dataNascimento TEXT NOT NULL,
-          cpf TEXT NOT NULL,
-          residencia TEXT NOT NULL,
-          clausula_id INTEGER NOT NULL,
-          criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          excluidoEm TIMESTAMP,
-          FOREIGN KEY (clausula_id) REFERENCES clausulas (id) ON DELETE CASCADE
-        )
-      ''');
-
-      await db.execute(
-        'CREATE INDEX IF NOT EXISTS idx_capitais_sociais_clausula_id ON capitais_sociais(clausula_id)',
-      );
-      await db.execute(
-        'CREATE INDEX IF NOT EXISTS idx_sedes_clausula_id ON sedes(clausula_id)',
-      );
-    }
-
-    // Migração da versão 2 para 3 - Adiciona as novas tabelas
-    if (oldVersion < 3) {
       await db.execute('''
         CREATE TABLE IF NOT EXISTS socios(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -398,6 +358,63 @@ class Conexao {
       );
       await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_socios_status ON socios(statusSocial)',
+      );
+    }
+
+    if (oldVersion < 4) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS capitais_sociais(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          valorTotal REAL NOT NULL,
+          divisaoQuotas TEXT NOT NULL,
+          formaIntegralizacao TEXT NOT NULL,
+          clausula_id INTEGER NOT NULL,
+          criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          excluidoEm TIMESTAMP,
+          FOREIGN KEY (clausula_id) REFERENCES clausulas (id) ON DELETE CASCADE
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS sedes(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          enderecoCompleto TEXT NOT NULL,
+          clausula_id INTEGER NOT NULL,
+          criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          excluidoEm TIMESTAMP,
+          FOREIGN KEY (clausula_id) REFERENCES clausulas (id) ON DELETE CASCADE
+        )
+      ''');
+
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_capitais_sociais_clausula_id ON capitais_sociais(clausula_id)',
+      );
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_sedes_clausula_id ON sedes(clausula_id)',
+      );
+    }
+
+    if (oldVersion < 5) {
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS administracoes(
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          nomeAdministrador TEXT NOT NULL,
+          poderesAdministrativos TEXT NOT NULL,
+          clausula_id INTEGER NOT NULL,
+          criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          excluidoEm TIMESTAMP,
+          FOREIGN KEY (clausula_id) REFERENCES clausulas (id) ON DELETE CASCADE
+        )
+      ''');
+
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_administracoes_clausula_id ON administracoes(clausula_id)',
+      );
+      await db.execute(
+        'CREATE INDEX IF NOT EXISTS idx_administracoes_nomeAdministrador ON administracoes(nomeAdministrador)',
       );
     }
   }
@@ -454,5 +471,10 @@ class Conexao {
   obterInformacoesTabelaObjetoSocial() async {
     final db = await database;
     return await db.rawQuery("PRAGMA table_info(objetos_sociais)");
+  }
+
+  Future<List<Map<String, dynamic>>> obterInformacoesTabelaAdministracao() async {
+    final db = await database;
+    return await db.rawQuery("PRAGMA table_info(administracoes)");
   }
 }

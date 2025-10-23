@@ -1,4 +1,5 @@
 import 'package:desafio/app/telas/capitalSocial_tela.dart';
+import 'package:desafio/app/telas/administracao_tela.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:desafio/servicos/clausula_servico.dart';
@@ -110,6 +111,15 @@ class _ClausulasTelaState extends State<ClausulasTela>
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => SedeTela(clausula: clausula)),
+    );
+  }
+
+  void _navegarParaAdministracao(Clausula clausula) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AdministracaoTela(clausula: clausula),
+      ),
     );
   }
 
@@ -397,28 +407,46 @@ class _ClausulasTelaState extends State<ClausulasTela>
               horizontal: 16.0,
               vertical: 8.0,
             ),
-            child: Row(
+            child: Column(
               children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () => _navegarParaCapitalSocial(clausula),
-                    icon: const Icon(Icons.account_balance, size: 18),
-                    label: const Text('Capital Social'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () => _navegarParaCapitalSocial(clausula),
+                        icon: const Icon(Icons.account_balance, size: 18),
+                        label: const Text('Capital Social'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Theme.of(context).primaryColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () => _navegarParaSede(clausula),
+                        icon: const Icon(Icons.location_on, size: 18),
+                        label: const Text('Sede'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.deepOrange,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                Expanded(
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
                   child: ElevatedButton.icon(
-                    onPressed: () => _navegarParaSede(clausula),
-                    icon: const Icon(Icons.location_on, size: 18),
-                    label: const Text('Sede'),
+                    onPressed: () => _navegarParaAdministracao(clausula),
+                    icon: const Icon(Icons.admin_panel_settings, size: 18),
+                    label: const Text('Administração'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.deepOrange,
+                      backgroundColor: Colors.purple,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 8),
                     ),
