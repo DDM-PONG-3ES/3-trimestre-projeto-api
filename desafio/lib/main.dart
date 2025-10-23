@@ -5,6 +5,7 @@ import 'package:desafio/servicos/capitalSocial_servico.dart';
 import 'package:desafio/servicos/objetoSocial_servico.dart';
 import 'package:desafio/servicos/prazoDuracao_servico.dart';
 import 'package:desafio/servicos/socio_servico.dart';
+import 'package:desafio/servicos/pdf_analysis_servico.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:desafio/servicos/autenticacao_servico.dart';
@@ -19,6 +20,7 @@ import 'package:desafio/app/telas/recados_tela.dart';
 import 'package:desafio/app/telas/contrato_tela.dart';
 import 'package:desafio/app/telas/prazoDuracao_tela.dart';
 import 'package:desafio/app/telas/clausulaGenerica_tela.dart';
+import 'package:desafio/app/telas/pdf_upload_tela.dart';
 import 'dart:io';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
@@ -50,6 +52,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => SedeServico()),
         ChangeNotifierProvider(create: (context) => CapitalSocialServico()),
         ChangeNotifierProvider(create: (context) => PrazoDuracaoServico()),
+        ChangeNotifierProvider(create: (context) => PdfAnalysisServico()),
       ],
       child: MaterialApp(
         title: 'Desafio App',
@@ -69,6 +72,7 @@ class MyApp extends StatelessWidget {
           '/objetos-sociais': (context) => const ObjetosSociaisScreen(),
           '/prazos-duracao': (context) => const PrazosDuracaoTela(),
           '/clausulaGenerica': (context) => const ClausulaGenericaTela(),
+          '/pdf-upload': (context) => const PdfUploadTela(),
         },
       ),
     );

@@ -132,17 +132,11 @@ class HomeTela extends StatelessWidget {
                         ),
                         _buildFeatureCard(
                           context,
-                          icon: Icons.person,
-                          title: 'Perfil',
-                          subtitle: 'Gerenciar conta',
+                          icon: Icons.picture_as_pdf,
+                          title: 'Análise PDF',
+                          subtitle: 'IA analisa documentos',
                           onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  'Funcionalidade em desenvolvimento',
-                                ),
-                              ),
-                            );
+                            Navigator.of(context).pushNamed('/pdf-upload');
                           },
                         ),
                         _buildFeatureCard(
@@ -325,6 +319,14 @@ class _CustomDrawer extends StatelessWidget {
                       onTap: () {
                         Navigator.pop(context);
                         Navigator.of(context).pushNamed('/prazos-duracao');
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.picture_as_pdf),
+                      title: const Text('Análise de PDF'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.of(context).pushNamed('/pdf-upload');
                       },
                     ),
                     ListTile(
