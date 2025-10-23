@@ -45,7 +45,9 @@ class _PrazosDuracaoTelaState extends State<PrazosDuracaoTela> {
               decoration: InputDecoration(
                 labelText: 'Pesquisar prazos',
                 prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 suffixIcon: IconButton(
                   icon: const Icon(Icons.clear),
                   onPressed: () {
@@ -78,9 +80,16 @@ class _PrazosDuracaoTelaState extends State<PrazosDuracaoTela> {
 
         var prazos = servico.prazosDuracao;
         if (_pesquisaController.text.isNotEmpty) {
-          prazos = prazos.where((p) =>
-            p.tipoPrazo?.toLowerCase().contains(_pesquisaController.text.toLowerCase()) ?? false
-          ).toList();
+          prazos =
+              prazos
+                  .where(
+                    (p) =>
+                        p.tipoPrazo?.toLowerCase().contains(
+                          _pesquisaController.text.toLowerCase(),
+                        ) ??
+                        false,
+                  )
+                  .toList();
         }
 
         if (prazos.isEmpty) {
@@ -90,7 +99,10 @@ class _PrazosDuracaoTelaState extends State<PrazosDuracaoTela> {
               children: [
                 Icon(Icons.schedule, size: 64, color: Colors.grey[400]),
                 const SizedBox(height: 16),
-                Text('Nenhum prazo cadastrado', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
+                Text(
+                  'Nenhum prazo cadastrado',
+                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                ),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
                   onPressed: () => _mostrarDialog(),
@@ -109,7 +121,7 @@ class _PrazosDuracaoTelaState extends State<PrazosDuracaoTela> {
             itemCount: prazos.length,
             itemBuilder: (context, index) {
               final prazo = prazos[index];
-              
+
               return Card(
                 margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
@@ -117,14 +129,42 @@ class _PrazosDuracaoTelaState extends State<PrazosDuracaoTela> {
                     backgroundColor: Theme.of(context).primaryColor,
                     child: const Icon(Icons.schedule, color: Colors.white),
                   ),
-                  title: Text(prazo.tipoPrazo ?? 'Não informado', style: const TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text('Criado ${_formatarData(prazo.criadoEm)}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                  title: Text(
+                    prazo.tipoPrazo ?? 'Não informado',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    'Criado ${_formatarData(prazo.criadoEm)}',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
                   trailing: PopupMenuButton<String>(
-                    onSelected: (v) => v == 'editar' ? _mostrarDialog(prazo: prazo) : _excluir(prazo),
-                    itemBuilder: (_) => const [
-                      PopupMenuItem(value: 'editar', child: ListTile(leading: Icon(Icons.edit), title: Text('Editar'), contentPadding: EdgeInsets.zero)),
-                      PopupMenuItem(value: 'excluir', child: ListTile(leading: Icon(Icons.delete, color: Colors.red), title: Text('Excluir', style: TextStyle(color: Colors.red)), contentPadding: EdgeInsets.zero)),
-                    ],
+                    onSelected:
+                        (v) =>
+                            v == 'editar'
+                                ? _mostrarDialog(prazo: prazo)
+                                : _excluir(prazo),
+                    itemBuilder:
+                        (_) => const [
+                          PopupMenuItem(
+                            value: 'editar',
+                            child: ListTile(
+                              leading: Icon(Icons.edit),
+                              title: Text('Editar'),
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                          PopupMenuItem(
+                            value: 'excluir',
+                            child: ListTile(
+                              leading: Icon(Icons.delete, color: Colors.red),
+                              title: Text(
+                                'Excluir',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                        ],
                   ),
                   onTap: () => _mostrarDialog(prazo: prazo),
                 ),
@@ -137,20 +177,33 @@ class _PrazosDuracaoTelaState extends State<PrazosDuracaoTela> {
   }
 
   void _mostrarDialog({PrazoDuracao? prazo}) {
-    showDialog(context: context, builder: (context) => _PrazoDuracaoDialog(prazoDuracao: prazo));
+    showDialog(
+      context: context,
+      builder: (context) => _PrazoDuracaoDialog(prazoDuracao: prazo),
+    );
   }
 
   Future<void> _excluir(PrazoDuracao prazo) async {
     final confirmar = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Confirmar exclusão'),
-        content: const Text('Tem certeza que deseja excluir este prazo?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Excluir', style: TextStyle(color: Colors.red))),
-        ],
-      ),
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Confirmar exclusão'),
+            content: const Text('Tem certeza que deseja excluir este prazo?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text(
+                  'Excluir',
+                  style: TextStyle(color: Colors.red),
+                ),
+              ),
+            ],
+          ),
     );
 
     if (confirmar == true && mounted) {
@@ -158,7 +211,12 @@ class _PrazosDuracaoTelaState extends State<PrazosDuracaoTela> {
       final sucesso = await servico.excluirPrazoDuracao(prazo.id!);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(sucesso ? 'Excluído com sucesso' : servico.erro ?? 'Erro'), backgroundColor: sucesso ? null : Colors.red),
+          SnackBar(
+            content: Text(
+              sucesso ? 'Excluído com sucesso' : servico.erro ?? 'Erro',
+            ),
+            backgroundColor: sucesso ? null : Colors.red,
+          ),
         );
       }
     }
@@ -167,8 +225,10 @@ class _PrazosDuracaoTelaState extends State<PrazosDuracaoTela> {
   String _formatarData(DateTime? data) {
     if (data == null) return 'Não informada';
     final dif = DateTime.now().difference(data);
-    if (dif.inDays > 7) return '${data.day.toString().padLeft(2, '0')}/${data.month.toString().padLeft(2, '0')}/${data.year}';
-    if (dif.inDays > 0) return '${dif.inDays} dia${dif.inDays == 1 ? '' : 's'} atrás';
+    if (dif.inDays > 7)
+      return '${data.day.toString().padLeft(2, '0')}/${data.month.toString().padLeft(2, '0')}/${data.year}';
+    if (dif.inDays > 0)
+      return '${dif.inDays} dia${dif.inDays == 1 ? '' : 's'} atrás';
     if (dif.inHours > 0) return '${dif.inHours}h atrás';
     return dif.inMinutes > 0 ? '${dif.inMinutes}min atrás' : 'Agora';
   }
@@ -191,7 +251,8 @@ class _PrazoDuracaoDialogState extends State<_PrazoDuracaoDialog> {
   @override
   void initState() {
     super.initState();
-    if (widget.prazoDuracao != null) _carregarDados(widget.prazoDuracao!.tipoPrazo ?? '');
+    if (widget.prazoDuracao != null)
+      _carregarDados(widget.prazoDuracao!.tipoPrazo ?? '');
   }
 
   void _carregarDados(String prazo) {
@@ -217,11 +278,12 @@ class _PrazoDuracaoDialogState extends State<_PrazoDuracaoDialog> {
     final totalMeses = int.parse(_mesesController.text);
     final anos = totalMeses ~/ 12;
     final meses = totalMeses % 12;
-    
+
     String prazo = 'Prazo Determinado - ';
-    prazo += anos > 0 
-      ? '$anos ${anos == 1 ? 'ano' : 'anos'}${meses > 0 ? ' e $meses ${meses == 1 ? 'mês' : 'meses'}' : ''}'
-      : '$totalMeses ${totalMeses == 1 ? 'mês' : 'meses'}';
+    prazo +=
+        anos > 0
+            ? '$anos ${anos == 1 ? 'ano' : 'anos'}${meses > 0 ? ' e $meses ${meses == 1 ? 'mês' : 'meses'}' : ''}'
+            : '$totalMeses ${totalMeses == 1 ? 'mês' : 'meses'}';
 
     return prazo;
   }
@@ -231,7 +293,7 @@ class _PrazoDuracaoDialogState extends State<_PrazoDuracaoDialog> {
 
     setState(() => _carregando = true);
     final servico = context.read<PrazoDuracaoServico>();
-    
+
     bool sucesso;
     if (widget.prazoDuracao == null) {
       sucesso = await servico.criarPrazoDuracao(tipoPrazo: _gerarPrazo());
@@ -251,7 +313,11 @@ class _PrazoDuracaoDialogState extends State<_PrazoDuracaoDialog> {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(sucesso ? '${widget.prazoDuracao == null ? 'Criado' : 'Atualizado'} com sucesso' : servico.erro ?? 'Erro'),
+          content: Text(
+            sucesso
+                ? '${widget.prazoDuracao == null ? 'Criado' : 'Atualizado'} com sucesso'
+                : servico.erro ?? 'Erro',
+          ),
           backgroundColor: sucesso ? Colors.green : Colors.red,
         ),
       );
@@ -263,7 +329,10 @@ class _PrazoDuracaoDialogState extends State<_PrazoDuracaoDialog> {
     return AlertDialog(
       title: Row(
         children: [
-          Icon(widget.prazoDuracao != null ? Icons.edit_calendar : Icons.schedule, color: Theme.of(context).primaryColor),
+          Icon(
+            widget.prazoDuracao != null ? Icons.edit_calendar : Icons.schedule,
+            color: Theme.of(context).primaryColor,
+          ),
           const SizedBox(width: 8),
           Text(widget.prazoDuracao != null ? 'Editar Prazo' : 'Novo Prazo'),
         ],
@@ -288,7 +357,9 @@ class _PrazoDuracaoDialogState extends State<_PrazoDuracaoDialog> {
                 validator: (v) {
                   if (v?.isEmpty ?? true) return 'Campo obrigatório';
                   final n = int.tryParse(v!);
-                  return (n == null || n < 1 || n > 600) ? 'Entre 1 e 600 meses' : null;
+                  return (n == null || n < 1 || n > 600)
+                      ? 'Entre 1 e 600 meses'
+                      : null;
                 },
               ),
               const SizedBox(height: 16),
@@ -317,12 +388,20 @@ class _PrazoDuracaoDialogState extends State<_PrazoDuracaoDialog> {
         ),
       ),
       actions: [
-        TextButton(onPressed: _carregando ? null : () => Navigator.pop(context), child: const Text('Cancelar')),
+        TextButton(
+          onPressed: _carregando ? null : () => Navigator.pop(context),
+          child: const Text('Cancelar'),
+        ),
         ElevatedButton(
           onPressed: _carregando ? null : _salvar,
-          child: _carregando
-            ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-            : Text(widget.prazoDuracao != null ? 'Salvar' : 'Criar'),
+          child:
+              _carregando
+                  ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : Text(widget.prazoDuracao != null ? 'Salvar' : 'Criar'),
         ),
       ],
     );

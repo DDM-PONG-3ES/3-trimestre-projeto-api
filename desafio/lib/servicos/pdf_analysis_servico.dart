@@ -82,33 +82,24 @@ class PdfAnalysisServico extends ChangeNotifier {
       final contratoDao = ContratoDAO();
       final recadoDao = RecadoDAO();
 
-      // Get current date
       final now = DateTime.now();
       final dateString =
           '${now.day.toString().padLeft(2, '0')}/${now.month.toString().padLeft(2, '0')}/${now.year}';
 
-      // Save PDF info to contratos table
       await contratoDao.criarContrato(
         fileName, // titulo
         'PDF Analysis', // nomeEmpresa
         'Analisado', // status
         'PDF analisado via Gemini AI', // descricao
-        dateString, // dataGeracao
-        fileName, // link (using filename as reference)
+        dateString,
+        fileName,
       );
 
-      // Save Gemini response to recados table
-      await recadoDao.criarRecado(
-        geminiResponse, // nome (storing the analysis content)
-        null, // erroIA
-        modeloIA: 'gemini', // modeloIA
-      );
+      await recadoDao.criarRecado(geminiResponse, null);
 
       print('Data saved successfully to database');
     } catch (e) {
       print('Error saving to database: $e');
-      // Don't throw here to avoid disrupting the user experience
-      // The analysis result is still shown even if database save fails
     }
   }
 }
