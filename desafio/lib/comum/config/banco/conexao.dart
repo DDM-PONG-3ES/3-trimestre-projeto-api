@@ -17,7 +17,7 @@ class Conexao {
     String path = join(await getDatabasesPath(), 'nahero_app.db');
     return await openDatabase(
       path,
-      version: 4,
+      version: 8,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
       onConfigure: _onConfigure,
@@ -76,6 +76,7 @@ class Conexao {
         nome TEXT,
         chave TEXT,
         usuario_id INTEGER NOT NULL,
+        clausula_id INTEGER,
         criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         excluidoEm TIMESTAMP,
@@ -89,6 +90,9 @@ class Conexao {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nome TEXT,
         erroIA TEXT,
+        modeloIA TEXT,
+        conteudoAnalise TEXT,
+        nomeArquivo TEXT,
         criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         excluidoEm TIMESTAMP
@@ -137,9 +141,11 @@ class Conexao {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nomeClausula TEXT NOT NULL,
         conteudo TEXT NOT NULL,
+        recado_id INTEGER,
         criadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         atualizadoEm TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        excluidoEm TIMESTAMP
+        excluidoEm TIMESTAMP,
+        FOREIGN KEY (recado_id) REFERENCES recados (id) ON DELETE CASCADE
       )
     ''');
 
@@ -399,6 +405,31 @@ class Conexao {
       await db.execute(
         'CREATE INDEX IF NOT EXISTS idx_socios_status ON socios(statusSocial)',
       );
+    }
+
+    // Migration to version 6 - Add new fields to recados table for better PDF analysis storage
+    if (oldVersion < 6) {
+      await db.execute('''
+        ALTER TABLE recados ADD COLUMN conteudoAnalise TEXT
+      ''');
+      await db.execute('''
+        ALTER TABLE recados ADD COLUMN nomeArquivo TEXT
+      ''');
+    }
+
+    // Migration to version 7 - Add recado_id to clausulas_genericas for PDF analysis linking
+    if (oldVersion < 7) {
+      await db.execute('''
+        ALTER TABLE clausulas_genericas ADD COLUMN recado_id INTEGER
+      ''');
+      // Note: We don't add the foreign key constraint in ALTER TABLE for SQLite compatibility
+    }
+
+    // Migration to version 8 - Add clausula_id to modelos table
+    if (oldVersion < 8) {
+      await db.execute('''
+        ALTER TABLE modelos ADD COLUMN clausula_id INTEGER
+      ''');
     }
   }
 

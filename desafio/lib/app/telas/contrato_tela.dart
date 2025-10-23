@@ -386,7 +386,12 @@ class _ContratoDialogState extends State<_ContratoDialog> {
   late String _statusSelecionado;
   bool _isCarregando = false;
 
-  final List<String> _statusOptions = ['Pendente', 'Aprovado', 'Rejeitado'];
+  final List<String> _statusOptions = [
+    'Pendente',
+    'Aprovado',
+    'Rejeitado',
+    'Analisado',
+  ];
 
   @override
   void initState() {
