@@ -3,6 +3,9 @@ import 'package:desafio/comum/entity/entidade_base.dart';
 class Recado extends EntidadeBase {
   String? nome;
   String? erroIA;
+  String? modeloIA;
+  String? conteudoAnalise;
+  String? nomeArquivo;
 
   Recado({
     super.id,
@@ -11,6 +14,9 @@ class Recado extends EntidadeBase {
     super.excluidoEm,
     this.nome,
     this.erroIA,
+    this.modeloIA,
+    this.conteudoAnalise,
+    this.nomeArquivo,
   });
 
   factory Recado.fromJson(Map<String, dynamic> json) {
@@ -18,15 +24,19 @@ class Recado extends EntidadeBase {
       id: json['id'],
       nome: json['nome'],
       erroIA: json['erroIA'],
-      criadoEm: json['criadoEm'] != null
-          ? DateTime.parse(json['criadoEm'])
-          : null,
-      atualizadoEm: json['atualizadoEm'] != null
-          ? DateTime.parse(json['atualizadoEm'])
-          : null,
-      excluidoEm: json['excluidoEm'] != null
-          ? DateTime.parse(json['excluidoEm'])
-          : null,
+      modeloIA: json['modeloIA'],
+      conteudoAnalise: json['conteudoAnalise'],
+      nomeArquivo: json['nomeArquivo'],
+      criadoEm:
+          json['criadoEm'] != null ? DateTime.parse(json['criadoEm']) : null,
+      atualizadoEm:
+          json['atualizadoEm'] != null
+              ? DateTime.parse(json['atualizadoEm'])
+              : null,
+      excluidoEm:
+          json['excluidoEm'] != null
+              ? DateTime.parse(json['excluidoEm'])
+              : null,
     );
   }
 
@@ -35,6 +45,9 @@ class Recado extends EntidadeBase {
       'id': id,
       'nome': nome,
       'erroIA': erroIA,
+      'modeloIA': modeloIA,
+      'conteudoAnalise': conteudoAnalise,
+      'nomeArquivo': nomeArquivo,
       'criadoEm': criadoEm?.toIso8601String(),
       'atualizadoEm': atualizadoEm?.toIso8601String(),
       'excluidoEm': excluidoEm?.toIso8601String(),
@@ -46,6 +59,9 @@ class Recado extends EntidadeBase {
       'id': id,
       'nome': nome,
       'erroIA': erroIA,
+      'modeloIA': modeloIA,
+      'conteudoAnalise': conteudoAnalise,
+      'nomeArquivo': nomeArquivo,
       'criadoEm': criadoEm?.toIso8601String(),
       'atualizadoEm': atualizadoEm?.toIso8601String(),
       'excluidoEm': excluidoEm?.toIso8601String(),
@@ -57,15 +73,17 @@ class Recado extends EntidadeBase {
       id: map['id'],
       nome: map['nome'],
       erroIA: map['erroIA'],
-      criadoEm: map['criadoEm'] != null
-          ? DateTime.parse(map['criadoEm'])
-          : null,
-      atualizadoEm: map['atualizadoEm'] != null
-          ? DateTime.parse(map['atualizadoEm'])
-          : null,
-      excluidoEm: map['excluidoEm'] != null
-          ? DateTime.parse(map['excluidoEm'])
-          : null,
+      modeloIA: map['modeloIA'],
+      conteudoAnalise: map['conteudoAnalise'],
+      nomeArquivo: map['nomeArquivo'],
+      criadoEm:
+          map['criadoEm'] != null ? DateTime.parse(map['criadoEm']) : null,
+      atualizadoEm:
+          map['atualizadoEm'] != null
+              ? DateTime.parse(map['atualizadoEm'])
+              : null,
+      excluidoEm:
+          map['excluidoEm'] != null ? DateTime.parse(map['excluidoEm']) : null,
     );
   }
 }

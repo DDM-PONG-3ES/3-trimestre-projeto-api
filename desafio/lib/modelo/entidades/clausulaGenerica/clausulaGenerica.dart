@@ -3,6 +3,7 @@ import 'package:desafio/comum/entity/entidade_base.dart';
 class ClausulaGenerica extends EntidadeBase {
   String? nomeClausula;
   String? conteudo;
+  int? recadoId;
 
   ClausulaGenerica({
     super.id,
@@ -11,6 +12,7 @@ class ClausulaGenerica extends EntidadeBase {
     super.excluidoEm,
     this.nomeClausula,
     this.conteudo,
+    this.recadoId,
   });
 
   factory ClausulaGenerica.fromMap(Map<String, dynamic> map) {
@@ -18,6 +20,7 @@ class ClausulaGenerica extends EntidadeBase {
       id: map['id'],
       nomeClausula: map['nomeClausula'],
       conteudo: map['conteudo'],
+      recadoId: map['recado_id'],
       criadoEm:
           map['criadoEm'] != null ? DateTime.parse(map['criadoEm']) : null,
       atualizadoEm:
@@ -34,6 +37,7 @@ class ClausulaGenerica extends EntidadeBase {
       'id': id,
       'nomeClausula': nomeClausula,
       'conteudo': conteudo,
+      'recado_id': recadoId,
       'criadoEm': criadoEm?.toIso8601String(),
       'atualizadoEm': atualizadoEm?.toIso8601String(),
       'excluidoEm': excluidoEm?.toIso8601String(),
@@ -45,6 +49,7 @@ class ClausulaGenerica extends EntidadeBase {
       id: json['id'],
       nomeClausula: json['nomeClausula'],
       conteudo: json['conteudo'],
+      recadoId: json['recado_id'],
       criadoEm:
           json['criadoEm'] != null ? DateTime.parse(json['criadoEm']) : null,
       atualizadoEm:
@@ -63,6 +68,7 @@ class ClausulaGenerica extends EntidadeBase {
       'id': id,
       'nomeClausula': nomeClausula,
       'conteudo': conteudo,
+      'recado_id': recadoId,
       'criadoEm': criadoEm?.toIso8601String(),
       'atualizadoEm': atualizadoEm?.toIso8601String(),
       'excluidoEm': excluidoEm?.toIso8601String(),

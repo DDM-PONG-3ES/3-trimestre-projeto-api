@@ -12,6 +12,7 @@ class ClausulaGenericaDAO {
   Future<ClausulaGenerica?> criarClausulaGenerica({
     required String nomeClausula,
     required String conteudo,
+    int? recadoId,
   }) async {
     final db = await _db;
     try {
@@ -19,6 +20,7 @@ class ClausulaGenericaDAO {
       final id = await db.insert('clausulas_genericas', {
         'nomeClausula': nomeClausula,
         'conteudo': conteudo,
+        'recado_id': recadoId,
         'criadoEm': agora.toIso8601String(),
         'atualizadoEm': agora.toIso8601String(),
       }, conflictAlgorithm: ConflictAlgorithm.replace);
@@ -26,6 +28,7 @@ class ClausulaGenericaDAO {
         id: id,
         nomeClausula: nomeClausula,
         conteudo: conteudo,
+        recadoId: recadoId,
         criadoEm: agora,
         atualizadoEm: agora,
       );

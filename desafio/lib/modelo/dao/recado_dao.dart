@@ -9,7 +9,13 @@ class RecadoDAO {
 
   Future<Database> get _db async => await Conexao().database;
 
-  Future<Recado?> criarRecado(String nome, String? erroIA) async {
+  Future<Recado?> criarRecado(
+    String nome,
+    String? erroIA, {
+    String? modeloIA,
+    String? conteudoAnalise,
+    String? nomeArquivo,
+  }) async {
     final db = await _db;
 
     try {
@@ -17,6 +23,9 @@ class RecadoDAO {
       final id = await db.insert('recados', {
         'nome': nome,
         'erroIA': erroIA,
+        'modeloIA': modeloIA,
+        'conteudoAnalise': conteudoAnalise,
+        'nomeArquivo': nomeArquivo,
         'criadoEm': agora.toIso8601String(),
         'atualizadoEm': agora.toIso8601String(),
       }, conflictAlgorithm: ConflictAlgorithm.replace);
@@ -25,6 +34,9 @@ class RecadoDAO {
         id: id,
         nome: nome,
         erroIA: erroIA,
+        modeloIA: modeloIA,
+        conteudoAnalise: conteudoAnalise,
+        nomeArquivo: nomeArquivo,
         criadoEm: agora,
         atualizadoEm: agora,
       );
